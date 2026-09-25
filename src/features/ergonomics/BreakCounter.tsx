@@ -15,9 +15,9 @@ export function BreakCounter() {
     <Card>
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-900">Movement breaks</p>
-          <p className="text-xs text-slate-500">
-            Goal: {BREAK_GOAL}+ today (ideally every hour) {met && <span className="font-semibold text-emerald-600">· Goal met</span>}
+          <p className="text-sm font-semibold text-ink">Movement breaks</p>
+          <p className="text-xs text-mute">
+            Goal: {BREAK_GOAL}+ today (ideally every hour) {met && <span className="font-semibold text-success">· Goal met</span>}
           </p>
         </div>
         <Stepper value={count} onChange={setBreaks} label="movement breaks" />
@@ -28,15 +28,15 @@ export function BreakCounter() {
             key={i}
             className={cn(
               'h-2 flex-1 rounded-full transition-colors duration-300',
-              i < count ? (i < BREAK_GOAL ? 'bg-teal-500' : 'bg-emerald-400') : i < BREAK_GOAL ? 'bg-teal-100' : 'bg-slate-100',
+              i < count ? (i < BREAK_GOAL ? 'bg-brand' : 'bg-success') : i < BREAK_GOAL ? 'bg-brand/20' : 'bg-panel-2',
             )}
           />
         ))}
       </div>
-      <div className="mt-3 flex items-start gap-2 rounded-xl bg-sky-50 p-2.5 text-xs text-sky-900">
-        <Eye className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+      <div className="mt-3 flex items-start gap-2 rounded-[4px_12px_12px_4px] border-l-4 border-info bg-well p-2.5 text-xs text-ink/85">
+        <Eye className="mt-0.5 size-3.5 shrink-0 text-info" aria-hidden />
         <p>
-          <strong>20-20-20:</strong> every 20 minutes, look at something 20 ft (6 m) away for 20 seconds. Add a few chin tucks each time.
+          <strong className="text-info">20-20-20:</strong> every 20 minutes, look at something 20 ft (6 m) away for 20 seconds. Add a few chin tucks each time.
         </p>
       </div>
     </Card>

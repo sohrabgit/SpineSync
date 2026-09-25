@@ -15,10 +15,10 @@ export function AppShell({ tab, onTabChange, children }: { tab: TabId; onTabChan
   }, [tab])
 
   return (
-    <div className="relative mx-auto min-h-dvh max-w-md bg-slate-50 shadow-xl shadow-slate-900/5">
+    <div className="relative mx-auto min-h-dvh max-w-md bg-bg sm:border-x sm:border-line/60">
       <Header onOpenSettings={() => setSettingsOpen(true)} />
       <StatusBanner />
-      <main key={tab} className="animate-fade-in px-4 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+      <main key={tab} className="animate-fade-in px-4 pt-4 pb-[calc(7rem+env(safe-area-inset-bottom))]">
         {children}
       </main>
       <BottomNav active={tab} onChange={onTabChange} badges={{ exercises: remaining }} />

@@ -13,7 +13,7 @@ interface ProgressRingProps {
   instant?: boolean
 }
 
-export function ProgressRing({ value, size = 64, stroke = 7, color = '#0f766e', track = '#e2e8f0', children, label, instant }: ProgressRingProps) {
+export function ProgressRing({ value, size = 64, stroke = 7, color = '#5cc8b0', track = '#2c3140', children, label, instant }: ProgressRingProps) {
   const r = (size - stroke) / 2
   const c = 2 * Math.PI * r
   const clamped = Math.min(1, Math.max(0, value))

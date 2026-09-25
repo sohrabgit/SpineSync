@@ -1,11 +1,16 @@
 import type { PlanLevel } from '@/types/recovery'
 import type { Tone } from '@/lib/metrics'
 
-export const TONE_STYLES: Record<Tone, { bg: string; text: string; border: string; icon: string }> = {
-  positive: { bg: 'bg-emerald-50', text: 'text-emerald-800', border: 'border-emerald-200', icon: 'text-emerald-600' },
-  info: { bg: 'bg-teal-50', text: 'text-teal-900', border: 'border-teal-200', icon: 'text-teal-600' },
-  warning: { bg: 'bg-amber-50', text: 'text-amber-900', border: 'border-amber-200', icon: 'text-amber-600' },
-  critical: { bg: 'bg-rose-50', text: 'text-rose-900', border: 'border-rose-200', icon: 'text-rose-600' },
+/**
+ * Tone surfaces on the dark theme: a faint wash of the signal colour, a
+ * stronger hairline, and the signal colour itself for icons and accents.
+ * `stripe` is the solid left-edge bar used by radio-style callouts.
+ */
+export const TONE_STYLES: Record<Tone, { bg: string; text: string; border: string; icon: string; stripe: string }> = {
+  positive: { bg: 'bg-success/10', text: 'text-success', border: 'border-success/35', icon: 'text-success', stripe: 'border-l-success' },
+  info: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/35', icon: 'text-info', stripe: 'border-l-info' },
+  warning: { bg: 'bg-warning/10', text: 'text-warning', border: 'border-warning/35', icon: 'text-warning', stripe: 'border-l-warning' },
+  critical: { bg: 'bg-danger/12', text: 'text-danger', border: 'border-danger/45', icon: 'text-danger', stripe: 'border-l-danger' },
 }
 
 export const LEVEL_META: Record<PlanLevel, { label: string; short: string; tone: Tone; description: string }> = {
@@ -15,12 +20,12 @@ export const LEVEL_META: Record<PlanLevel, { label: string; short: string; tone:
   medical_pause: { label: 'Medical pause', short: 'Paused', tone: 'critical', description: 'You reported a red-flag symptom, so exercises are paused until a clinician reviews it.' },
 }
 
-/** VAS colour ramp (0 = emerald → 10 = rose). */
+/** VAS colour ramp (0 = green → 10 = coral), matching the slider track. */
 export function vasColor(vas: number): string {
-  if (vas <= 2) return '#10b981'
-  if (vas <= 4) return '#65a30d'
-  if (vas <= 6) return '#d97706'
-  return '#e11d48'
+  if (vas <= 2) return '#72d39c'
+  if (vas <= 4) return '#f2c86b'
+  if (vas <= 6) return '#f3a66a'
+  return '#f2706b'
 }
 
 export function vasLabel(vas: number): string {

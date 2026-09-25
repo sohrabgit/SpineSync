@@ -1,12 +1,12 @@
 /** Shared chart tokens: one accent series, recessive hairline chrome, text in ink tokens. */
 export const CHART = {
-  series: '#0f766e', // teal-700
-  seriesWash: 'rgba(15, 118, 110, 0.10)',
-  critical: '#e11d48', // rose-600 — status only (flare days / threshold)
-  grid: '#e2e8f0', // slate-200
-  axisText: '#64748b', // slate-500
-  surface: '#ffffff',
-  tick: { fontSize: 11, fill: '#64748b' },
+  series: '#7fa9f5', // info blue
+  seriesWash: 'rgba(127, 169, 245, 0.12)',
+  critical: '#f2706b', // danger — status only (flare days / threshold)
+  grid: '#2c3140', // line
+  axisText: '#9aa1b5', // mute
+  surface: '#171a22', // panel
+  tick: { fontSize: 11, fill: '#9aa1b5', fontFamily: 'DM Sans, sans-serif' },
 } as const
 
 export const DAY_TICKS = [1, 5, 10, 15, 20, 25, 30]

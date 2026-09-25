@@ -19,7 +19,7 @@ export function CoachInsights() {
       <SectionTitle
         title="Coach"
         action={
-          <span className="inline-flex items-center gap-1 text-[11px] text-slate-400">
+          <span className="inline-flex items-center gap-1 text-[11px] text-dim">
             <Sparkles className="size-3" /> On-device insights
           </span>
         }
@@ -31,9 +31,9 @@ export function CoachInsights() {
           return (
             <li key={i.id} className={cn('flex animate-fade-in gap-3 rounded-2xl border p-3', s.bg, s.border)}>
               <Icon className={cn('mt-0.5 size-5 shrink-0', s.icon)} aria-hidden />
-              <div className={cn('text-sm', s.text)}>
-                <p className="font-semibold">{i.title}</p>
-                <p className="mt-0.5 opacity-90">{i.body}</p>
+              <div className="text-sm">
+                <p className={cn('font-semibold', s.text)}>{i.title}</p>
+                <p className="mt-0.5 text-ink/80">{i.body}</p>
               </div>
             </li>
           )

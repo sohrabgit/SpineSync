@@ -25,11 +25,11 @@ export function ExerciseTracker({ onNavigate }: { onNavigate: (t: TabId) => void
   if (!log.pain_checkin || !level) {
     return (
       <Card className="flex flex-col items-center py-10 text-center">
-        <div className="grid size-14 place-items-center rounded-2xl bg-teal-50 text-teal-700">
-          <Dumbbell className="size-7" />
+        <div className="knob grid size-14 place-items-center bg-success text-bg">
+          <Dumbbell className="size-7" strokeWidth={2.2} />
         </div>
-        <h1 className="mt-4 text-lg font-bold text-slate-900">Check in to unlock today’s plan</h1>
-        <p className="mt-1 max-w-xs text-sm text-slate-500">Your pain score decides whether today is a standard, reduced or flare-up day.</p>
+        <h1 className="mt-4 text-lg font-bold text-ink">Check in to unlock today’s plan</h1>
+        <p className="mt-1 max-w-xs text-sm text-mute">Your pain score decides whether today is a standard, reduced or flare-up day.</p>
         <Button className="mt-5" onClick={() => onNavigate('today')}>
           Go to check-in <ArrowRight className="size-4" />
         </Button>
@@ -46,26 +46,26 @@ export function ExerciseTracker({ onNavigate }: { onNavigate: (t: TabId) => void
       <Card>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-lg font-bold text-slate-900">Today’s exercises</h1>
-            <p className="text-xs text-slate-500">{tier !== null ? `Level ${tier} · ${TIER_NAMES[tier]}` : level === 'flare_up' ? 'Rest & modalities protocol' : 'Paused'}</p>
+            <h1 className="text-lg font-bold text-ink">Today’s exercises</h1>
+            <p className="text-xs text-mute">{tier !== null ? `Level ${tier} · ${TIER_NAMES[tier]}` : level === 'flare_up' ? 'Rest & modalities protocol' : 'Paused'}</p>
           </div>
           <Badge tone={LEVEL_META[level].tone} pulse={level === 'flare_up'}>
             {LEVEL_META[level].short}
           </Badge>
         </div>
         <div className="mt-4 flex items-center gap-3">
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100" aria-hidden>
-            <div className="h-full rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 transition-all duration-500" style={{ width: `${exercises.length ? (completed / exercises.length) * 100 : 0}%` }} />
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-panel-2" aria-hidden>
+            <div className="h-full rounded-full bg-gradient-to-r from-brand to-success transition-all duration-500" style={{ width: `${exercises.length ? (completed / exercises.length) * 100 : 0}%` }} />
           </div>
-          <span className="text-xs font-semibold text-slate-600 tabular-nums">
+          <span className="text-xs font-semibold text-mute tabular-nums">
             {completed}/{exercises.length} done
           </span>
         </div>
       </Card>
 
       {level === 'medical_pause' && (
-        <div className="flex gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900">
-          <ShieldAlert className="size-5 shrink-0 text-rose-600" aria-hidden />
+        <div className="flex gap-3 rounded-2xl border border-danger/45 bg-danger/12 p-3 text-sm text-ink">
+          <ShieldAlert className="size-5 shrink-0 text-danger" aria-hidden />
           <p>No exercises until a clinician has reviewed your symptoms. Rest with your neck supported.</p>
         </div>
       )}

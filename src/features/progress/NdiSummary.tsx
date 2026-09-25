@@ -13,11 +13,11 @@ export function NdiSummary({ assessments }: { assessments: NdiAssessment[] }) {
         const band = a ? ndiBand(a.score_pct) : null
         return (
           <li key={cp} className="flex items-center gap-3">
-            <span className="w-12 shrink-0 text-xs font-semibold text-slate-500">Day {cp}</span>
-            <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-teal-50">
-              {a && <div className="h-full rounded-full bg-teal-700 transition-all duration-700" style={{ width: `${Math.max(2, a.score_pct)}%` }} />}
+            <span className="w-12 shrink-0 text-xs font-semibold text-mute">Day {cp}</span>
+            <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-panel-2">
+              {a && <div className="h-full rounded-full bg-brand transition-all duration-700" style={{ width: `${Math.max(2, a.score_pct)}%` }} />}
             </div>
-            <span className={cn('shrink-0 text-right text-xs', a ? 'text-slate-900' : 'text-slate-400')}>
+            <span className={cn('shrink-0 text-right text-xs', a ? 'text-ink' : 'text-dim')}>
               {a && band ? (
                 <span className="inline-flex items-center gap-1.5">
                   <strong className="font-semibold">{a.score_pct}%</strong>

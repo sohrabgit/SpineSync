@@ -49,17 +49,17 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
 
   return (
     <Sheet open={open} onClose={close} title="Settings" subtitle={`Program started ${formatDate(startDate, { month: 'long', day: 'numeric', year: 'numeric' })}`}>
-      <div className="divide-y divide-slate-100">
+      <div className="divide-y divide-line/70">
         <label className={row}>
-          <span className="flex items-center gap-2 text-sm font-medium text-slate-800">
-            <Volume2 className="size-4 text-slate-400" /> Timer sounds
+          <span className="flex items-center gap-2 text-sm font-medium text-ink">
+            <Volume2 className="size-4 text-mute" /> Timer sounds
           </span>
           <Toggle checked={sound} onChange={setSound} label="Timer sounds" />
         </label>
 
         <section className="py-3">
-          <h3 className="text-sm font-semibold text-slate-900">Your data</h3>
-          <p className="mt-0.5 text-xs text-slate-500">Everything is stored only on this device. Export a backup to move it to another phone or keep it safe.</p>
+          <h3 className="text-sm font-semibold text-ink">Your data</h3>
+          <p className="mt-0.5 text-xs text-mute">Everything is stored only on this device. Export a backup to move it to another phone or keep it safe.</p>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Button variant="secondary" onClick={exportData}>
               <Download className="size-4" /> Export
@@ -80,17 +80,17 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
             />
           </div>
           {message && (
-            <p role="status" className={`mt-2 text-xs font-medium ${message.tone === 'ok' ? 'text-emerald-700' : 'text-rose-700'}`}>
+            <p role="status" className={`mt-2 text-xs font-medium ${message.tone === 'ok' ? 'text-success' : 'text-danger'}`}>
               {message.text}
             </p>
           )}
         </section>
 
         <section className="py-3">
-          <h3 className="text-sm font-semibold text-slate-900">Preview mode</h3>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <h3 className="text-sm font-semibold text-ink">Preview mode</h3>
+          <p className="mt-0.5 text-xs text-mute">
             Jump ahead one day to see how phases, NDI checkpoints and adaptive plans progress.
-            {offset > 0 && <strong className="text-amber-700"> The demo clock is {offset} day{offset === 1 ? '' : 's'} ahead.</strong>}
+            {offset > 0 && <strong className="text-warning"> The demo clock is {offset} day{offset === 1 ? '' : 's'} ahead.</strong>}
           </p>
           <Button variant="secondary" className="mt-3 w-full" onClick={simulateNextDay}>
             <FastForward className="size-4" /> Simulate next day
@@ -98,8 +98,8 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
         </section>
 
         <section className="py-3">
-          <h3 className="text-sm font-semibold text-rose-700">Reset program</h3>
-          <p className="mt-0.5 text-xs text-slate-500">Permanently deletes all check-ins, logs and assessments on this device.</p>
+          <h3 className="text-sm font-semibold text-danger">Reset program</h3>
+          <p className="mt-0.5 text-xs text-mute">Permanently deletes all check-ins, logs and assessments on this device.</p>
           {confirmReset ? (
             <div className="mt-3 grid grid-cols-2 gap-2">
               <Button variant="secondary" onClick={() => setConfirmReset(false)}>
@@ -116,13 +116,13 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
               </Button>
             </div>
           ) : (
-            <Button variant="secondary" className="mt-3 w-full text-rose-700" onClick={() => setConfirmReset(true)}>
+            <Button variant="secondary" className="mt-3 w-full text-danger" onClick={() => setConfirmReset(true)}>
               <RotateCcw className="size-4" /> Reset program
             </Button>
           )}
         </section>
 
-        <p className="py-4 text-[11px] leading-relaxed text-slate-400">
+        <p className="py-4 text-[11px] leading-relaxed text-dim">
           SpineSync is a self-management tool based on a general cervical disc rehabilitation playbook. It does not diagnose conditions or replace advice from a qualified clinician. Stop any exercise that makes arm symptoms worse.
         </p>
       </div>

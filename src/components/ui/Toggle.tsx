@@ -4,10 +4,10 @@ interface ToggleProps {
   checked: boolean
   onChange: (next: boolean) => void
   label: string
-  tone?: 'teal' | 'rose'
+  tone?: 'success' | 'danger'
 }
 
-export function Toggle({ checked, onChange, label, tone = 'teal' }: ToggleProps) {
+export function Toggle({ checked, onChange, label, tone = 'success' }: ToggleProps) {
   return (
     <button
       type="button"
@@ -17,10 +17,10 @@ export function Toggle({ checked, onChange, label, tone = 'teal' }: ToggleProps)
       onClick={() => onChange(!checked)}
       className={cn(
         'relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-200',
-        checked ? (tone === 'rose' ? 'bg-rose-500' : 'bg-teal-600') : 'bg-slate-300',
+        checked ? (tone === 'danger' ? 'bg-danger' : 'bg-success') : 'border border-line bg-panel-2',
       )}
     >
-      <span className={cn('inline-block size-5 rounded-full bg-white shadow transition-transform duration-200', checked ? 'translate-x-6' : 'translate-x-1')} />
+      <span className={cn('inline-block size-5 rounded-full shadow transition-transform duration-200', checked ? 'bg-bg' : 'bg-mute', checked ? 'translate-x-6' : 'translate-x-1')} />
     </button>
   )
 }

@@ -52,8 +52,8 @@ export function ProgressDashboard() {
   return (
     <div className="space-y-5">
       <div className="px-1">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Your progress</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-bold tracking-tight text-ink">Your progress</h1>
+        <p className="text-sm text-mute">
           {checkins} check-in{checkins === 1 ? '' : 's'} logged over {Math.min(currentDay, maxDay)} day{currentDay === 1 ? '' : 's'}
         </p>
       </div>
@@ -62,20 +62,20 @@ export function ProgressDashboard() {
         <StatTile
           label="Pain delta"
           icon={delta && delta.delta < 0 ? TrendingUp : TrendingDown}
-          iconClass={delta && delta.delta < 0 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}
+          iconClass={delta && delta.delta < 0 ? 'bg-warning text-bg' : 'bg-success text-bg'}
           value={delta ? `${delta.delta > 0 ? '−' : delta.delta < 0 ? '+' : ''}${Math.abs(delta.delta)}` : '—'}
           hint={delta ? `${delta.baseline} → ${delta.recent} (first vs last ${delta.window}d)` : 'Needs 2+ check-ins'}
         />
         <StatTile label="Avg adherence" icon={Target} value={avgAdherence !== null ? `${Math.round(avgAdherence)}%` : '—'} hint="Exercises + ergonomics" />
         <StatTile label="Check-in streak" icon={ChartLine} value={`${streak} day${streak === 1 ? '' : 's'}`} hint="Consecutive days logged" />
-        <StatTile label="Flare-up days" icon={Flame} iconClass="bg-rose-50 text-rose-600" value={String(flares)} hint={flares ? 'Rest-protocol days' : 'None so far'} />
+        <StatTile label="Flare-up days" icon={Flame} iconClass="bg-danger text-bg" value={String(flares)} hint={flares ? 'Rest-protocol days' : 'None so far'} />
       </div>
 
       <Card>
         <div className="mb-2 flex items-start justify-between gap-2">
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">Pain trend (VAS)</h2>
-            <p className="text-xs text-slate-500">0 = no pain, 10 = unbearable. Lower is better.</p>
+            <h2 className="text-sm font-semibold text-ink">Pain trend (VAS)</h2>
+            <p className="text-xs text-mute">0 = no pain, 10 = unbearable. Lower is better.</p>
           </div>
         </div>
         {checkins === 0 ? (
@@ -83,7 +83,7 @@ export function ProgressDashboard() {
         ) : (
           <>
             <PainTrendChart data={points} maxDay={maxDay} />
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500">
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-mute">
               <span className="inline-flex items-center gap-1.5">
                 <span className="size-2 rounded-full" style={{ backgroundColor: CHART.series }} /> Daily pain
               </span>
@@ -99,27 +99,27 @@ export function ProgressDashboard() {
       </Card>
 
       <Card>
-        <h2 className="text-sm font-semibold text-slate-900">Daily adherence</h2>
-        <p className="mb-2 text-xs text-slate-500">(Completed exercises + ergonomic tasks) ÷ scheduled tasks</p>
+        <h2 className="text-sm font-semibold text-ink">Daily adherence</h2>
+        <p className="mb-2 text-xs text-mute">(Completed exercises + ergonomic tasks) ÷ scheduled tasks</p>
         {points.every((p) => p.adherence === null) ? <EmptyChart text="Complete an exercise or checklist item to start tracking." /> : <AdherenceChart data={points} maxDay={maxDay} />}
       </Card>
 
       <Card>
-        <h2 className="text-sm font-semibold text-slate-900">Neck Disability Index</h2>
-        <p className="mb-3 text-xs text-slate-500">Taken on days 1, 15 and 30. Lower is better.</p>
+        <h2 className="text-sm font-semibold text-ink">Neck Disability Index</h2>
+        <p className="mb-3 text-xs text-mute">Taken on days 1, 15 and 30. Lower is better.</p>
         <NdiSummary assessments={assessments} />
       </Card>
 
       {checkins > 0 && (
-        <details className="group rounded-2xl border border-slate-200/80 bg-white">
-          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 text-sm font-semibold text-slate-900">
+        <details className="group rounded-2xl border border-line/60 bg-panel">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 text-sm font-semibold text-ink">
             Daily log table
-            <span className="text-xs font-medium text-teal-700 group-open:hidden">Show</span>
-            <span className="hidden text-xs font-medium text-teal-700 group-open:inline">Hide</span>
+            <span className="cap text-[11px] text-brand group-open:hidden">Show</span>
+            <span className="cap hidden text-[11px] text-brand group-open:inline">Hide</span>
           </summary>
           <div className="overflow-x-auto px-2 pb-3">
             <table className="w-full text-left text-xs">
-              <thead className="text-slate-500">
+              <thead className="text-mute">
                 <tr>
                   <th className="px-2 py-1.5 font-medium">Day</th>
                   <th className="px-2 py-1.5 font-medium">Date</th>
@@ -128,7 +128,7 @@ export function ProgressDashboard() {
                   <th className="px-2 py-1.5 text-right font-medium">Adherence</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700 tabular-nums">
+              <tbody className="divide-y divide-line/70 text-ink/90 tabular-nums">
                 {[...points].reverse().map((p) => (
                   <tr key={p.date}>
                     <td className="px-2 py-1.5 font-semibold">{p.day}</td>
@@ -148,5 +148,5 @@ export function ProgressDashboard() {
 }
 
 function EmptyChart({ text }: { text: string }) {
-  return <div className="grid h-32 place-items-center rounded-xl bg-slate-50 px-6 text-center text-xs text-slate-500">{text}</div>
+  return <div className="grid h-32 place-items-center rounded-xl border border-dashed border-line bg-well px-6 text-center text-xs text-mute">{text}</div>
 }

@@ -7,13 +7,13 @@ export function StatusBanner() {
 
   if (level === 'flare_up') {
     return (
-      <div role="alert" className="mx-4 mt-3 flex animate-fade-in gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-3 text-rose-900">
-        <TriangleAlert className="mt-0.5 size-5 shrink-0 text-rose-600" aria-hidden />
+      <div role="alert" className="mx-4 mt-3 flex animate-fade-in gap-3 rounded-[4px_14px_14px_4px] border-l-4 border-danger bg-danger/10 p-3">
+        <TriangleAlert className="mt-0.5 size-5 shrink-0 text-danger" aria-hidden />
         <div className="text-sm">
-          <p className="font-semibold">Flare-Up Emergency Mode</p>
-          <p className="mt-0.5 text-rose-800/90">
+          <p className="font-semibold text-danger">Flare-Up Emergency Mode</p>
+          <p className="mt-0.5 text-ink/85">
             Isometric and strengthening exercises are paused. If severe pain lasts more than 48 hours, or arm pain, numbness or weakness gets worse,{' '}
-            <strong>contact your doctor</strong>.
+            <strong className="text-ink">contact your doctor</strong>.
           </p>
         </div>
       </div>
@@ -21,21 +21,21 @@ export function StatusBanner() {
   }
   if (level === 'medical_pause') {
     return (
-      <div role="alert" className="mx-4 mt-3 flex animate-fade-in gap-3 rounded-2xl bg-rose-600 p-3 text-white shadow-lg shadow-rose-900/20">
-        <ShieldAlert className="mt-0.5 size-5 shrink-0" aria-hidden />
+      <div role="alert" className="mx-4 mt-3 flex animate-fade-in gap-3 rounded-2xl border border-danger/50 bg-danger/15 p-3">
+        <ShieldAlert className="mt-0.5 size-5 shrink-0 text-danger" aria-hidden />
         <div className="text-sm">
-          <p className="font-semibold">Exercises paused: red-flag symptom reported</p>
-          <p className="mt-0.5 text-rose-50">Please get urgent medical advice. For sudden weakness or loss of bladder/bowel control, call emergency services.</p>
+          <p className="font-semibold text-danger">Exercises paused: red-flag symptom reported</p>
+          <p className="mt-0.5 text-ink/85">Please get urgent medical advice. For sudden weakness or loss of bladder/bowel control, call emergency services.</p>
         </div>
       </div>
     )
   }
   if (level === 'reduced') {
     return (
-      <div className="mx-4 mt-3 flex animate-fade-in items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900">
-        <TrendingDown className="size-4 shrink-0 text-amber-600" aria-hidden />
-        <p>
-          <span className="font-semibold">Reduced intensity:</span> pain is higher than yesterday, so today’s exercises are one level easier.
+      <div className="mx-4 mt-3 flex animate-fade-in items-center gap-3 rounded-[4px_14px_14px_4px] border-l-4 border-warning bg-well px-3 py-2.5 text-sm">
+        <TrendingDown className="size-4 shrink-0 text-warning" aria-hidden />
+        <p className="text-ink/85">
+          <span className="font-bold text-warning">Reduced intensity:</span> pain is higher than yesterday, so today’s exercises are one level easier.
         </p>
       </div>
     )

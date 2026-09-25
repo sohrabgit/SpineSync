@@ -9,7 +9,7 @@ function AdherenceTooltip({ active, payload }: Partial<TooltipContentProps<numbe
   return (
     <ChartTooltipBox title={`Day ${p.day}`}>
       <p>
-        Adherence: <strong className="text-slate-900">{p.adherence}%</strong>
+        Adherence: <strong className="text-ink">{p.adherence}%</strong>
       </p>
     </ChartTooltipBox>
   )

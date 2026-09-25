@@ -11,12 +11,12 @@ export function Header({ onOpenSettings }: { onOpenSettings: () => void }) {
   const complete = day > PROGRAM_DAYS
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-slate-50/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-line/70 bg-bg/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <div className="flex h-14 items-center gap-3 px-4">
         <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="size-8 rounded-lg" />
         <div className="min-w-0 flex-1 leading-tight">
-          <p className="text-[15px] font-bold tracking-tight text-slate-900">SpineSync</p>
-          <p className="truncate text-xs text-slate-500">
+          <p className="text-[15px] font-bold tracking-tight text-ink">SpineSync</p>
+          <p className="truncate text-xs text-mute">
             {complete ? `Day ${day} · Maintenance` : `Day ${day} of ${PROGRAM_DAYS} · ${PHASES[phase].name}`}
           </p>
         </div>
@@ -25,8 +25,13 @@ export function Header({ onOpenSettings }: { onOpenSettings: () => void }) {
             {LEVEL_META[level].short}
           </Badge>
         )}
-        <button type="button" onClick={onOpenSettings} className="-mr-2 grid size-11 place-items-center rounded-full text-slate-500 hover:bg-slate-200/60" aria-label="Settings">
-          <Settings className="size-5" />
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          className="grid size-10 place-items-center rounded-full border border-line bg-panel text-mute hover:border-line-strong hover:text-ink"
+          aria-label="Settings"
+        >
+          <Settings className="size-[18px]" />
         </button>
       </div>
     </header>

@@ -24,7 +24,7 @@ export default function App() {
       {tab === 'exercises' && <ExerciseTracker onNavigate={setTab} />}
       {tab === 'ergonomics' && <ErgoGuide />}
       {tab === 'progress' && (
-        <Suspense fallback={<div className="grid h-64 place-items-center text-sm text-slate-400">Loading charts…</div>}>
+        <Suspense fallback={<div className="grid h-64 place-items-center text-sm text-dim">Loading charts…</div>}>
           <ProgressDashboard />
         </Suspense>
       )}

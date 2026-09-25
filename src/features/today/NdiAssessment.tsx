@@ -74,13 +74,13 @@ export function NdiAssessment({ open, onClose, checkpoint }: { open: boolean; on
         )
       }
     >
-      <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-slate-100" aria-hidden>
-        <div className="h-full rounded-full bg-teal-600 transition-all duration-300" style={{ width: `${(Math.min(index, NDI_SECTIONS.length) / NDI_SECTIONS.length) * 100}%` }} />
+      <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-panel-2" aria-hidden>
+        <div className="h-full rounded-full bg-brand transition-all duration-300" style={{ width: `${(Math.min(index, NDI_SECTIONS.length) / NDI_SECTIONS.length) * 100}%` }} />
       </div>
 
       {section && !reviewing && (
         <fieldset key={index} className="animate-fade-in">
-          <legend className="mb-3 text-base font-semibold text-slate-900">{section.title}</legend>
+          <legend className="mb-3 text-base font-semibold text-ink">{section.title}</legend>
           <div className="space-y-2">
             {section.options.map((label, value) => {
               const selected = answers[index] === value
@@ -92,10 +92,10 @@ export function NdiAssessment({ open, onClose, checkpoint }: { open: boolean; on
                   onClick={() => choose(value as NdiAnswer)}
                   className={cn(
                     'flex min-h-12 w-full items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm transition',
-                    selected ? 'border-teal-600 bg-teal-50 text-teal-900' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300',
+                    selected ? 'border-brand bg-brand/12 text-ink' : 'border-line bg-panel-2 text-ink/90 hover:border-line-strong',
                   )}
                 >
-                  <span className={cn('grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold', selected ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-500')}>{value}</span>
+                  <span className={cn('knob grid size-7 shrink-0 place-items-center text-xs font-bold', selected ? 'bg-brand text-bg' : 'bg-panel text-mute')}>{value}</span>
                   {label}
                 </button>
               )
@@ -107,14 +107,14 @@ export function NdiAssessment({ open, onClose, checkpoint }: { open: boolean; on
       {reviewing && (
         <div className="animate-pop py-4 text-center">
           {score === null ? (
-            <p className="text-sm text-slate-600">Answer at least one section to calculate your score.</p>
+            <p className="text-sm text-mute">Answer at least one section to calculate your score.</p>
           ) : (
             <>
-              <p className="text-5xl font-bold text-slate-900 tabular-nums">{score}%</p>
+              <p className="text-5xl font-bold text-ink tabular-nums">{score}%</p>
               <div className="mt-2">
                 <Badge tone={ndiBand(score).tone}>{ndiBand(score).label}</Badge>
               </div>
-              <p className="mt-4 text-sm text-slate-500">
+              <p className="mt-4 text-sm text-mute">
                 Based on {answeredCount} of {NDI_SECTIONS.length} sections. Lower is better. You’ll repeat this on days 15 and 30 to track change.
               </p>
             </>

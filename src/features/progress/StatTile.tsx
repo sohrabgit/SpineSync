@@ -9,17 +9,17 @@ interface Props {
   iconClass?: string
 }
 
-export function StatTile({ label, value, hint, icon: Icon, iconClass = 'bg-teal-50 text-teal-700' }: Props) {
+export function StatTile({ label, value, hint, icon: Icon, iconClass = 'bg-brand text-bg' }: Props) {
   return (
     <Card className="p-3">
       <div className="flex items-center gap-2">
-        <span className={`grid size-7 place-items-center rounded-lg ${iconClass}`}>
-          <Icon className="size-3.5" aria-hidden />
+        <span className={`knob grid size-8 place-items-center ${iconClass}`}>
+          <Icon className="size-4" strokeWidth={2.2} aria-hidden />
         </span>
-        <p className="text-xs font-medium text-slate-500">{label}</p>
+        <p className="cap text-[11px] text-mute">{label}</p>
       </div>
-      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{value}</p>
-      {hint && <p className="mt-0.5 text-[11px] text-slate-500">{hint}</p>}
+      <p className="mt-2 text-2xl font-bold tracking-tight tabular-nums text-ink">{value}</p>
+      {hint && <p className="mt-0.5 text-[11px] text-mute">{hint}</p>}
     </Card>
   )
 }

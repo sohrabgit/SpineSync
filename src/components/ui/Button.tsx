@@ -1,13 +1,15 @@
 import type { ButtonHTMLAttributes } from 'react'
 import { cn } from './cn'
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'success'
 
+// Hello Again button language: solid fills with a tactile bottom edge, uppercase bold labels.
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-teal-700 text-white shadow-sm shadow-teal-900/20 hover:bg-teal-800 active:bg-teal-900 disabled:bg-slate-300 disabled:shadow-none',
-  secondary: 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 active:bg-slate-100 disabled:text-slate-400',
-  ghost: 'text-teal-800 hover:bg-teal-50 active:bg-teal-100 disabled:text-slate-400',
-  danger: 'bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800',
+  primary: 'border border-brand bg-brand text-bg press hover:brightness-105 disabled:border-line disabled:bg-panel-2 disabled:text-dim disabled:shadow-none disabled:hover:brightness-100',
+  secondary: 'border border-line bg-panel-2 text-ink hover:border-line-strong active:bg-panel disabled:text-dim',
+  ghost: 'border border-line bg-transparent text-mute hover:text-ink active:bg-panel-2 disabled:text-dim',
+  danger: 'border border-danger bg-transparent text-danger hover:bg-danger/10 active:bg-danger/15',
+  success: 'border border-success bg-success text-bg press hover:brightness-105',
 }
 
 export function Button({ variant = 'primary', className, type = 'button', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
@@ -15,7 +17,7 @@ export function Button({ variant = 'primary', className, type = 'button', ...pro
     <button
       type={type}
       className={cn(
-        'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100',
+        'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold tracking-[0.04em] uppercase transition-all duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:active:scale-100',
         VARIANTS[variant],
         className,
       )}

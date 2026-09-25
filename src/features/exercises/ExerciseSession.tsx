@@ -37,7 +37,7 @@ export function ExerciseSession({ exerciseId, onClose }: { exerciseId: ExerciseI
             <Button variant="secondary" onClick={() => updateExercise(exerciseId, resetProgress)}>
               <RotateCcw className="size-4" /> Redo
             </Button>
-            <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700" onClick={onClose}>
+            <Button variant="success" className="flex-1" onClick={onClose}>
               <CircleCheckBig className="size-4" /> Completed
             </Button>
           </div>
@@ -68,22 +68,22 @@ export function ExerciseSession({ exerciseId, onClose }: { exerciseId: ExerciseI
       <SessionTimer key={`${exerciseId}-${progress.hold_seconds}`} exerciseId={exerciseId} />
 
       <section className="mt-6">
-        <h3 className="text-sm font-semibold text-slate-900">How to do it</h3>
-        <p className="mt-0.5 text-xs text-slate-500">{def.target}</p>
+        <h3 className="cap text-mute">How to do it</h3>
+        <p className="mt-1 text-xs text-mute">{def.target}</p>
         <ol className="mt-3 space-y-2">
           {def.steps.map((step, i) => (
-            <li key={step} className="flex gap-3 text-sm text-slate-700">
-              <span className="grid size-6 shrink-0 place-items-center rounded-full bg-teal-50 text-xs font-bold text-teal-700">{i + 1}</span>
+            <li key={step} className="flex gap-3 text-sm text-ink/90">
+              <span className="grid size-6 shrink-0 place-items-center rounded-full bg-brand/12 text-xs font-bold text-brand">{i + 1}</span>
               <span className="pt-0.5">{step}</span>
             </li>
           ))}
         </ol>
       </section>
-      <section className="mt-4 rounded-xl bg-amber-50 p-3">
-        <h3 className="flex items-center gap-1.5 text-xs font-semibold text-amber-900">
+      <section className="mt-4 rounded-[4px_12px_12px_4px] border-l-4 border-warning bg-well p-3">
+        <h3 className="flex items-center gap-1.5 text-xs font-semibold text-warning">
           <TriangleAlert className="size-3.5" /> Safety
         </h3>
-        <ul className="mt-1 space-y-0.5 text-xs text-amber-900/90">
+        <ul className="mt-1 space-y-0.5 text-xs text-ink/80">
           {def.cautions.map((c) => (
             <li key={c}>• {c}</li>
           ))}
@@ -127,13 +127,13 @@ function SessionTimer({ exerciseId }: { exerciseId: ExerciseId }) {
   const side = sideForSet(exerciseId, setIndex)
 
   return (
-    <div className="flex flex-col items-center rounded-3xl bg-slate-50 px-4 pt-5 pb-4">
+    <div className="flex flex-col items-center rounded-3xl border border-line/60 bg-well px-4 pt-5 pb-4">
       <div className="relative">
         <HoldTimerRing phase={timer.phase} remainingMs={timer.remainingMs} durationMs={timer.durationMs} running={timer.running} />
         <button
           type="button"
           onClick={() => setSound(!sound)}
-          className="absolute -top-1 -right-10 grid size-10 place-items-center rounded-full text-slate-400 hover:bg-slate-200/60"
+          className="absolute -top-1 -right-10 grid size-10 place-items-center rounded-full text-dim hover:bg-panel-2 hover:text-ink"
           aria-label={sound ? 'Mute sounds' : 'Unmute sounds'}
         >
           {sound ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
@@ -142,26 +142,26 @@ function SessionTimer({ exerciseId }: { exerciseId: ExerciseId }) {
 
       {!timed && (
         <div className="mt-4 grid w-full grid-cols-2 gap-2 text-center">
-          <div className="rounded-xl bg-white p-2">
-            <p className="text-[11px] text-slate-500">Set</p>
-            <p className="text-lg font-bold text-slate-900 tabular-nums">
+          <div className="rounded-xl bg-panel-2 p-2">
+            <p className="cap text-[10px] text-mute">Set</p>
+            <p className="text-lg font-bold text-ink tabular-nums">
               {done ? progress.target_sets : setIndex + 1}
-              <span className="text-sm font-medium text-slate-400">/{progress.target_sets}</span>
+              <span className="text-sm font-medium text-dim">/{progress.target_sets}</span>
             </p>
-            {side && <p className="truncate text-[11px] font-semibold text-teal-700">{side}</p>}
+            {side && <p className="truncate text-[11px] font-semibold text-brand">{side}</p>}
           </div>
-          <div className="rounded-xl bg-white p-2">
-            <p className="text-[11px] text-slate-500">Rep</p>
-            <p className="text-lg font-bold text-slate-900 tabular-nums">
+          <div className="rounded-xl bg-panel-2 p-2">
+            <p className="cap text-[10px] text-mute">Rep</p>
+            <p className="text-lg font-bold text-ink tabular-nums">
               {progress.reps_done}
-              <span className="text-sm font-medium text-slate-400">/{progress.target_reps}</span>
+              <span className="text-sm font-medium text-dim">/{progress.target_reps}</span>
             </p>
           </div>
         </div>
       )}
 
       {done ? (
-        <p className="mt-4 animate-pop text-sm font-semibold text-emerald-700">Nice work, all done for today.</p>
+        <p className="mt-4 animate-pop text-sm font-semibold text-success">Nice work, all done for today.</p>
       ) : (
         <div className="mt-4 flex w-full items-center justify-center gap-2">
           {!timer.running && timer.phase === 'idle' && (
@@ -205,7 +205,7 @@ function SessionTimer({ exerciseId }: { exerciseId: ExerciseId }) {
             timer.stop()
             updateExercise(exerciseId, completeSet)
           }}
-          className="mt-2 min-h-10 text-xs font-semibold text-teal-700"
+          className="mt-2 min-h-10 text-xs font-bold tracking-[0.04em] text-brand uppercase"
         >
           Finish this set now
         </button>

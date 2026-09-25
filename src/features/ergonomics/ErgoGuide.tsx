@@ -26,13 +26,13 @@ export function ErgoGuide() {
     <div className="space-y-5">
       <Card className="flex items-center gap-4">
         <ProgressRing value={scheduled.length ? done / scheduled.length : 0} size={60} stroke={6} label={`${done} of ${scheduled.length} ergonomic tasks done`}>
-          <span className="text-sm font-bold text-slate-900 tabular-nums">
+          <span className="text-sm font-bold text-ink tabular-nums">
             {done}/{scheduled.length}
           </span>
         </ProgressRing>
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Lifestyle & ergonomics</h1>
-          <p className="text-xs text-slate-500">Small posture habits throughout the day protect your disc more than any single exercise.</p>
+          <h1 className="text-lg font-bold tracking-tight text-ink">Lifestyle & ergonomics</h1>
+          <p className="text-xs text-mute">Small posture habits throughout the day protect your disc more than any single exercise.</p>
         </div>
       </Card>
 
@@ -42,7 +42,7 @@ export function ErgoGuide() {
         <SectionTitle
           title="Daily activities"
           action={
-            <div className="flex rounded-full bg-slate-200/70 p-0.5 text-xs font-semibold" role="tablist" aria-label="Filter categories">
+            <div className="flex overflow-hidden rounded-xl border border-line text-[11px] font-bold tracking-[0.06em] uppercase" role="tablist" aria-label="Filter categories">
               {(['mine', 'all'] as const).map((f) => (
                 <button
                   key={f}
@@ -50,7 +50,7 @@ export function ErgoGuide() {
                   role="tab"
                   aria-selected={filter === f}
                   onClick={() => setFilter(f)}
-                  className={cn('min-h-8 rounded-full px-3 transition', filter === f ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500')}
+                  className={cn('min-h-8 px-3 transition', filter === f ? 'bg-ink text-bg' : 'text-mute hover:text-ink')}
                 >
                   {f === 'mine' ? 'My day' : 'All 10'}
                 </button>
@@ -70,7 +70,7 @@ export function ErgoGuide() {
           ))}
         </ul>
         {filter === 'mine' && (
-          <button type="button" onClick={() => setFilter('all')} className="mt-3 w-full rounded-xl border border-dashed border-slate-300 py-3 text-xs font-semibold text-teal-700">
+          <button type="button" onClick={() => setFilter('all')} className="mt-3 w-full rounded-xl border border-dashed border-line-strong py-3 text-xs font-semibold text-brand hover:bg-panel">
             Browse driving, cooking, travel, childcare and more →
           </button>
         )}

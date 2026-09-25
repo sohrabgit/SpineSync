@@ -11,7 +11,7 @@ function PainTooltip({ active, payload }: Partial<TooltipContentProps<number, st
   return (
     <ChartTooltipBox title={`Day ${p.day}`}>
       <p>
-        Pain: <strong className="text-slate-900">{p.vas}/10</strong> · {vasLabel(p.vas)}
+        Pain: <strong className="text-ink">{p.vas}/10</strong> · {vasLabel(p.vas)}
       </p>
       {p.level && <p>{LEVEL_META[p.level].label}</p>}
     </ChartTooltipBox>

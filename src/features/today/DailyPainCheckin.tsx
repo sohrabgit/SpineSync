@@ -47,42 +47,42 @@ export function DailyPainCheckin({ initial, onDone, onCancel }: Props) {
     >
       <VasSlider value={vas} onChange={setVas} />
       {prevVas !== null && (
-        <p className="-mt-2 text-xs text-slate-500">
-          Last check-in: <span className="font-semibold text-slate-700">{prevVas}/10</span>
-          {vas !== prevVas && <span className={vas > prevVas ? 'text-amber-700' : 'text-emerald-700'}> ({vas > prevVas ? '+' : ''}{vas - prevVas})</span>}
+        <p className="-mt-2 text-xs text-mute">
+          Last check-in: <span className="font-semibold text-ink">{prevVas}/10</span>
+          {vas !== prevVas && <span className={vas > prevVas ? 'text-warning' : 'text-success'}> ({vas > prevVas ? '+' : ''}{vas - prevVas})</span>}
         </p>
       )}
 
-      <div className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+      <div className="divide-y divide-line rounded-xl border border-line bg-well">
         <label className="flex items-center justify-between gap-3 p-3">
           <span className="text-sm">
-            <span className="font-medium text-slate-800">Pain spreading into the arm</span>
-            <span className="block text-xs text-slate-500">Shooting or burning pain below the shoulder</span>
+            <span className="font-medium text-ink">Pain spreading into the arm</span>
+            <span className="block text-xs text-mute">Shooting or burning pain below the shoulder</span>
           </span>
-          <Toggle checked={radiating} onChange={setRadiating} label="Radiating arm pain" tone="rose" />
+          <Toggle checked={radiating} onChange={setRadiating} label="Radiating arm pain" tone="danger" />
         </label>
         <label className="flex items-center justify-between gap-3 p-3">
           <span className="text-sm">
-            <span className="font-medium text-slate-800">Numbness or tingling</span>
-            <span className="block text-xs text-slate-500">In the arm, hand or fingers</span>
+            <span className="font-medium text-ink">Numbness or tingling</span>
+            <span className="block text-xs text-mute">In the arm, hand or fingers</span>
           </span>
           <Toggle checked={numbness} onChange={setNumbness} label="Numbness present" />
         </label>
       </div>
 
-      <div className={cn('rounded-xl border', flags.length ? 'border-rose-300 bg-rose-50/60' : 'border-slate-200')}>
+      <div className={cn('rounded-xl border', flags.length ? 'border-danger/50 bg-danger/10' : 'border-line bg-well')}>
         <button type="button" onClick={() => setFlagsOpen((o) => !o)} aria-expanded={flagsOpen} className="flex w-full items-center gap-2 p-3 text-left text-sm">
-          <ShieldAlert className={cn('size-4', flags.length ? 'text-rose-600' : 'text-slate-400')} aria-hidden />
-          <span className="flex-1 font-medium text-slate-800">Red-flag symptoms</span>
-          {flags.length ? <Badge tone="critical">{flags.length} reported</Badge> : <span className="text-xs text-slate-500">None</span>}
-          <ChevronDown className={cn('size-4 text-slate-400 transition-transform', flagsOpen && 'rotate-180')} aria-hidden />
+          <ShieldAlert className={cn('size-4', flags.length ? 'text-danger' : 'text-dim')} aria-hidden />
+          <span className="flex-1 font-medium text-ink">Red-flag symptoms</span>
+          {flags.length ? <Badge tone="critical">{flags.length} reported</Badge> : <span className="text-xs text-mute">None</span>}
+          <ChevronDown className={cn('size-4 text-dim transition-transform', flagsOpen && 'rotate-180')} aria-hidden />
         </button>
         {flagsOpen && (
           <ul className="animate-fade-in space-y-1 px-3 pb-3">
             {RED_FLAGS.map((f) => (
               <li key={f.id}>
-                <label className="flex cursor-pointer items-start gap-3 rounded-lg p-2 text-sm text-slate-700 hover:bg-white">
-                  <input type="checkbox" checked={flags.includes(f.id)} onChange={() => toggleFlag(f.id)} className="mt-0.5 size-5 shrink-0 accent-rose-600" />
+                <label className="flex cursor-pointer items-start gap-3 rounded-lg p-2 text-sm text-ink/90 hover:bg-panel-2">
+                  <input type="checkbox" checked={flags.includes(f.id)} onChange={() => toggleFlag(f.id)} className="mt-0.5 size-5 shrink-0 accent-[#f2706b]" />
                   {f.label}
                 </label>
               </li>
@@ -91,8 +91,8 @@ export function DailyPainCheckin({ initial, onDone, onCancel }: Props) {
         )}
       </div>
 
-      <div key={preview} className="flex animate-fade-in items-center gap-2 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
-        <Zap className="size-4 shrink-0 text-teal-600" aria-hidden />
+      <div key={preview} className="flex animate-fade-in items-center gap-2 rounded-xl bg-panel-2 p-3 text-xs text-mute">
+        <Zap className="size-4 shrink-0 text-brand" aria-hidden />
         <span className="flex-1">
           Today’s plan will be: <Badge tone={meta.tone}>{meta.label}</Badge>
         </span>
