@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+/*
+ * Calm dark theme. Menu knobs and tactile buttons follow Hello Again's
+ * graphic language. The default Tailwind palette is removed on purpose:
+ * every colour in the app must come from one of the tokens below.
+ */
+@theme {
+  --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Surfaces */
+  --color-bg: #0e1015;
+  --color-well: #12141b;
+  --color-panel: #171a22;
+  --color-panel-2: #20242f;
+  --color-line: #2c3140;
+  --color-line-strong: #3b4152;
+
+  /* Text */
+  --color-ink: #eceef3;
+  --color-mute: #9aa1b5;
+  --color-dim: #646b7e;
+
+  /* Signals — softened so the app stays quiet */
+  --color-brand: #5cc8b0; /* primary action (calm mint) */
+  --color-danger: #f2706b; /* red flag / critical */
+  --color-success: #72d39c; /* done, improving */
+  --color-warning: #f2c86b; /* caution, rest phase, focus ring */
+  --color-best: #b8a2f2; /* personal best */
+  --color-info: #7fa9f5; /* neutral information, chart series */
+  --color-heat: #f3a66a; /* heat therapy, moderate pain */
+  --color-cold: #82d2e6; /* cold therapy */
+
+  --animate-fade-in: fade-in 260ms ease-out both;
+  --animate-slide-up: slide-up 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pop: pop 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pulse-soft: pulse-soft 2.4s ease-in-out infinite;
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes slide-up {
+    from { transform: translateY(100%); }
+    to { transform: none; }
+  }
+  @keyframes pop {
+    0% { opacity: 0; transform: scale(0.94); }
+    60% { opacity: 1; transform: scale(1.02); }
+    100% { transform: none; }
+  }
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+}
+
+/* Small tracked-out uppercase label. */
+@utility cap {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+/* Hello Again "knob": a round, solid menu button with tactile shading. */
+@utility knob {
+  border-radius: 9999px;
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.3), inset 0 2px 0 rgb(255 255 255 / 0.22), 0 3px 10px rgb(0 0 0 / 0.4);
+}
+
+/* Tactile bottom edge for solid buttons. */
+@utility press {
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.25);
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-bg text-ink antialiased;
+    font-size: 16px;
+    line-height: 1.45;
+    overscroll-behavior-y: none;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-warning;
+  }
+  ::placeholder {
+    color: var(--color-dim);
+  }
+}
+
+/* VAS slider */
+.vas-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 10px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #72d39c 0%, #f2c86b 40%, #f3a66a 65%, #f2706b 100%);
+}
+.vas-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: #0e1015;
+  border: 4px solid var(--thumb, #eceef3);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.5);
+  transition: transform 150ms ease;
+}
+.vas-range:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+.vas-range::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  background: #0e1015;
+  border: 4px solid var(--thumb, #eceef3);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.5);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
