@@ -13,9 +13,9 @@ describe('ndiScore', () => {
     expect(ndiScore(Array(10).fill(null))).toBeNull()
   })
   it('bands scores', () => {
-    expect(ndiBand(8).label).toBe('No disability')
-    expect(ndiBand(28).label).toBe('Mild')
-    expect(ndiBand(48).label).toBe('Moderate')
+    expect(ndiBand(8).id).toBe('none')
+    expect(ndiBand(28).id).toBe('mild')
+    expect(ndiBand(48).id).toBe('moderate')
   })
 })
 

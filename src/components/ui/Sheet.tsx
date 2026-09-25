@@ -1,6 +1,7 @@
 import { useEffect, useId, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
+import { useI18n } from '@/i18n'
 
 interface SheetProps {
   open: boolean
@@ -14,6 +15,7 @@ interface SheetProps {
 /** Mobile bottom sheet (centred dialog column on wider screens). */
 export function Sheet({ open, onClose, title, subtitle, children, footer }: SheetProps) {
   const titleId = useId()
+  const { m } = useI18n()
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -44,7 +46,7 @@ export function Sheet({ open, onClose, title, subtitle, children, footer }: Shee
             </h2>
             {subtitle && <div className="mt-1.5 text-sm text-mute">{subtitle}</div>}
           </div>
-          <button type="button" onClick={onClose} className="grid size-10 shrink-0 place-items-center rounded-full border border-line bg-panel-2 text-ink hover:border-line-strong" aria-label="Close">
+          <button type="button" onClick={onClose} className="grid size-10 shrink-0 place-items-center rounded-full border border-line bg-panel-2 text-ink hover:border-line-strong" aria-label={m.common.close}>
             <X className="size-5" />
           </button>
         </header>

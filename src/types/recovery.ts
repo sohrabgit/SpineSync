@@ -48,15 +48,17 @@ export type ExerciseId =
 
 export type ExerciseCategory = 'mobility' | 'isometric' | 'stretch' | 'strength' | 'cardio' | 'modality' | 'rest'
 
+export type SideId = 'forward' | 'backward' | 'right' | 'left'
+
+/** Effort cue shown next to a dose; translated at render time. */
+export type EffortId = 'very_gentle' | 'non_resisted' | 'half' | 'full'
+
+/** Structural exercise data. Names, steps and cautions live in the i18n messages. */
 export interface ExerciseDefinition {
   id: ExerciseId
-  name: string
   category: ExerciseCategory
-  target: string
-  steps: string[]
-  cautions: string[]
-  /** Labels cycled across sets, e.g. four isometric directions or left/right sides. */
-  sides?: string[]
+  /** Sides cycled across sets, e.g. four isometric directions or left/right. */
+  sides?: SideId[]
 }
 
 /** A dose prescription for one exercise at a given tier. */
@@ -66,7 +68,7 @@ export interface Prescription {
   sets: number
   reps: number
   hold_seconds: number
-  effort_note?: string
+  effort_note?: EffortId
 }
 
 export type ExerciseStatus = 'pending' | 'in_progress' | 'completed' | 'skipped'
@@ -82,7 +84,7 @@ export interface ExerciseProgress {
   target_sets: number
   target_reps: number
   hold_seconds: number
-  effort_note?: string
+  effort_note?: EffortId
 }
 
 // ─── Ergonomics ─────────────────────────────────────────────────────────────
@@ -99,16 +101,13 @@ export type ErgoCategoryId =
   | 'intimacy'
   | 'devices'
 
+/** Task ids double as `ergonomics_checklist` keys; labels live in the i18n messages. */
 export interface ErgoTask {
   id: string
-  label: string
-  detail?: string
 }
 
 export interface ErgoCategory {
   id: ErgoCategoryId
-  name: string
-  blurb: string
   /** Core categories are always part of the daily plan. */
   core: boolean
   tasks: ErgoTask[]

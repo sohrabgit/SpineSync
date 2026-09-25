@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { ArrowRight, Dumbbell, ShieldAlert } from 'lucide-react'
 import type { ExerciseId } from '@/types/recovery'
-import { TIER_NAMES } from '@/data/protocols'
 import { suppressedExercises, tierFor } from '@/lib/adaptive'
 import { markComplete, resetProgress } from '@/lib/exerciseProgress'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
@@ -9,7 +8,8 @@ import type { TabId } from '@/components/layout/tabs'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, SectionTitle } from '@/components/ui/Card'
-import { LEVEL_META } from '@/components/ui/tone'
+import { LEVEL_TONE } from '@/components/ui/tone'
+import { useI18n } from '@/i18n'
 import { ExerciseCard, SuppressedExerciseCard } from './ExerciseCard'
 import { ExerciseSession } from './ExerciseSession'
 
@@ -18,6 +18,8 @@ export function ExerciseTracker({ onNavigate }: { onNavigate: (t: TabId) => void
   const phase = useRecoveryStore((s) => s.phase)
   const updateExercise = useRecoveryStore((s) => s.updateExercise)
   const [openId, setOpenId] = useState<ExerciseId | null>(null)
+  const { m } = useI18n()
+  const t = m.exercisesUi
 
   const level = log.adapted_plan_level
   const exercises = log.exercises_completed
@@ -28,10 +30,10 @@ export function ExerciseTracker({ onNavigate }: { onNavigate: (t: TabId) => void
         <div className="knob grid size-14 place-items-center bg-success text-bg">
           <Dumbbell className="size-7" strokeWidth={2.2} />
         </div>
-        <h1 className="mt-4 text-lg font-bold text-ink">Check in to unlock today’s plan</h1>
-        <p className="mt-1 max-w-xs text-sm text-mute">Your pain score decides whether today is a standard, reduced or flare-up day.</p>
+        <h1 className="mt-4 text-lg font-bold text-ink">{t.lockedTitle}</h1>
+        <p className="mt-1 max-w-xs text-sm text-mute">{t.lockedBody}</p>
         <Button className="mt-5" onClick={() => onNavigate('today')}>
-          Go to check-in <ArrowRight className="size-4" />
+          {t.goToCheckin} <ArrowRight className="size-4 rtl:-scale-x-100" />
         </Button>
       </Card>
     )
@@ -46,19 +48,19 @@ export function ExerciseTracker({ onNavigate }: { onNavigate: (t: TabId) => void
       <Card>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-lg font-bold text-ink">Today’s exercises</h1>
-            <p className="text-xs text-mute">{tier !== null ? `Level ${tier} · ${TIER_NAMES[tier]}` : level === 'flare_up' ? 'Rest & modalities protocol' : 'Paused'}</p>
+            <h1 className="text-lg font-bold text-ink">{t.title}</h1>
+            <p className="text-xs text-mute">{tier !== null ? t.levelName(tier, m.tiers[tier]) : level === 'flare_up' ? t.restProtocol : t.paused}</p>
           </div>
-          <Badge tone={LEVEL_META[level].tone} pulse={level === 'flare_up'}>
-            {LEVEL_META[level].short}
+          <Badge tone={LEVEL_TONE[level]} pulse={level === 'flare_up'}>
+            {m.levels[level].short}
           </Badge>
         </div>
         <div className="mt-4 flex items-center gap-3">
           <div className="h-2 flex-1 overflow-hidden rounded-full bg-panel-2" aria-hidden>
-            <div className="h-full rounded-full bg-gradient-to-r from-brand to-success transition-all duration-500" style={{ width: `${exercises.length ? (completed / exercises.length) * 100 : 0}%` }} />
+            <div className="h-full rounded-full bg-gradient-to-r from-brand to-success rtl:bg-gradient-to-l transition-all duration-500" style={{ width: `${exercises.length ? (completed / exercises.length) * 100 : 0}%` }} />
           </div>
           <span className="text-xs font-semibold text-mute tabular-nums">
-            {completed}/{exercises.length} done
+            {t.doneCount(completed, exercises.length)}
           </span>
         </div>
       </Card>
@@ -66,12 +68,12 @@ export function ExerciseTracker({ onNavigate }: { onNavigate: (t: TabId) => void
       {level === 'medical_pause' && (
         <div className="flex gap-3 rounded-2xl border border-danger/45 bg-danger/12 p-3 text-sm text-ink">
           <ShieldAlert className="size-5 shrink-0 text-danger" aria-hidden />
-          <p>No exercises until a clinician has reviewed your symptoms. Rest with your neck supported.</p>
+          <p>{t.noExercises}</p>
         </div>
       )}
 
       <section>
-        <SectionTitle title={level === 'flare_up' ? 'Flare-up care' : 'Plan'} />
+        <SectionTitle title={level === 'flare_up' ? t.flareCare : t.plan} />
         <ul className="space-y-2">
           {exercises.map((e) => (
             <ExerciseCard
@@ -86,10 +88,10 @@ export function ExerciseTracker({ onNavigate }: { onNavigate: (t: TabId) => void
 
       {suppressed.length > 0 && (
         <section>
-          <SectionTitle title="Paused today" />
+          <SectionTitle title={t.pausedToday} />
           <ul className="space-y-2">
             {suppressed.map((id) => (
-              <SuppressedExerciseCard key={id} id={id} reason={level === 'flare_up' ? 'Paused during flare-up' : 'Paused pending medical review'} />
+              <SuppressedExerciseCard key={id} id={id} reason={level === 'flare_up' ? t.pausedFlare : t.pausedMedical} />
             ))}
           </ul>
         </section>

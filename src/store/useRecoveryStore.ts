@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import type {
   DailyLog,
+  EffortId,
   ErgoCategoryId,
   ExerciseId,
   ExerciseProgress,
@@ -14,6 +15,7 @@ import { buildPlan, decidePlanLevel, mergeProgress, previousVas } from '@/lib/ad
 import { appToday } from '@/lib/date'
 import { dailyCompliance, ndiScore } from '@/lib/metrics'
 import { dayFromStart, dueNdiCheckpoint, phaseForDay, PROGRAM_DAYS } from '@/lib/program'
+import { detectLang, type Lang } from '@/i18n/format'
 
 export const STORAGE_KEY = 'spinesync:v1'
 
@@ -21,6 +23,7 @@ export interface Preferences {
   sound_enabled: boolean
   /** Demo clock: shifts "today" forward to preview program progression. */
   clock_offset_days: number
+  language: Lang
 }
 
 export interface RecoveryState extends RecoveryData {
@@ -36,6 +39,7 @@ interface RecoveryActions {
   toggleErgoCategory: (id: ErgoCategoryId) => void
   saveNdi: (answers: NdiAnswer[]) => void
   setSoundEnabled: (on: boolean) => void
+  setLanguage: (lang: Lang) => void
   /** Roll the active log over when the calendar day changes. */
   syncDay: () => void
   simulateNextDay: () => void
@@ -59,7 +63,7 @@ export function createEmptyLog(date: string, day: number): DailyLog {
   }
 }
 
-function initialState(): RecoveryState {
+function initialState(language: Lang = detectLang()): RecoveryState {
   const date = appToday()
   return {
     user_id: 'usr_local',
@@ -69,7 +73,7 @@ function initialState(): RecoveryState {
     history: [],
     program: { start_date: date, duration_days: PROGRAM_DAYS, onboarded: false, active_ergo_categories: DEFAULT_ACTIVE_CATEGORIES },
     ndi_assessments: [],
-    preferences: { sound_enabled: true, clock_offset_days: 0 },
+    preferences: { sound_enabled: true, clock_offset_days: 0, language },
   }
 }
 
@@ -99,6 +103,25 @@ function rollover(s: RecoveryState): Partial<RecoveryState> | null {
     phase,
     daily_log: { ...fresh, daily_compliance_percentage: dailyCompliance(fresh, s.program.active_ergo_categories) },
   }
+}
+
+/** v1 stored effort notes as English text; v2 stores translatable ids. */
+const LEGACY_EFFORT: Record<string, EffortId> = {
+  'Very gentle': 'very_gentle',
+  'Non-resisted': 'non_resisted',
+  '50% effort': 'half',
+  'Full effort': 'full',
+}
+
+function migrateEffortNotes<T extends RecoveryData>(data: T): T {
+  const fixLog = (log: DailyLog): DailyLog => ({
+    ...log,
+    exercises_completed: log.exercises_completed.map((e) => {
+      const id = e.effort_note && LEGACY_EFFORT[e.effort_note]
+      return id ? { ...e, effort_note: id } : e
+    }),
+  })
+  return { ...data, daily_log: fixLog(data.daily_log), history: data.history.map(fixLog) }
 }
 
 function isRecoveryData(x: unknown): x is RecoveryData {
@@ -186,6 +209,8 @@ export const useRecoveryStore = create<RecoveryStore>()(
 
       setSoundEnabled: (on) => set((s) => ({ preferences: { ...s.preferences, sound_enabled: on } })),
 
+      setLanguage: (language) => set((s) => ({ preferences: { ...s.preferences, language } })),
+
       syncDay: () => {
         const patch = rollover(get())
         if (patch) set(patch)
@@ -196,18 +221,32 @@ export const useRecoveryStore = create<RecoveryStore>()(
         get().syncDay()
       },
 
-      resetProgram: () => set(initialState()),
+      resetProgram: () => set((s) => initialState(s.preferences.language)),
 
       importData: (data) => {
         if (!isRecoveryData(data)) throw new Error('This file is not a valid SpineSync export.')
         const prefs = (data as Partial<RecoveryState>).preferences
-        set({ ...data, preferences: { sound_enabled: prefs?.sound_enabled ?? true, clock_offset_days: prefs?.clock_offset_days ?? 0 } })
+        set((s) => ({
+          ...migrateEffortNotes(data),
+          preferences: {
+            sound_enabled: prefs?.sound_enabled ?? true,
+            clock_offset_days: prefs?.clock_offset_days ?? 0,
+            language: s.preferences.language,
+          },
+        }))
         get().syncDay()
       },
     }),
     {
       name: STORAGE_KEY,
-      version: 1,
+      version: 2,
+      migrate: (persisted, version) => {
+        const s = persisted as RecoveryState
+        if (version < 2) {
+          return { ...migrateEffortNotes(s), preferences: { ...s.preferences, language: detectLang() } }
+        }
+        return s
+      },
       storage: createJSONStorage(() => localStorage),
       partialize: (s): RecoveryState => ({
         user_id: s.user_id,

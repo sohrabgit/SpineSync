@@ -6,18 +6,16 @@ export const PROGRAM_DAYS = 30
 
 export interface PhaseInfo {
   phase: Phase
-  name: string
   startDay: number
   endDay: number
-  focus: string
 }
 
-/** 4-week progression — playbook §3. */
+/** 4-week progression — playbook §3. Names and focus text live in i18n (`m.phases`). */
 export const PHASES: Record<Phase, PhaseInfo> = {
-  1: { phase: 1, name: 'Pain Control', startDay: 1, endDay: 7, focus: 'Calm inflammation, ease spasm, avoid neck flexion.' },
-  2: { phase: 2, name: 'Stabilization', startDay: 8, endDay: 15, focus: 'Activate deep neck flexors and restore pain-free range.' },
-  3: { phase: 3, name: 'Strengthening', startDay: 16, endDay: 22, focus: 'Build periscapular strength and correct forward head posture.' },
-  4: { phase: 4, name: 'Functional', startDay: 23, endDay: 30, focus: 'Integrate healthy mechanics into daily life and build endurance.' },
+  1: { phase: 1, startDay: 1, endDay: 7 },
+  2: { phase: 2, startDay: 8, endDay: 15 },
+  3: { phase: 3, startDay: 16, endDay: 22 },
+  4: { phase: 4, startDay: 23, endDay: 30 },
 }
 
 export function phaseForDay(day: number): Phase {

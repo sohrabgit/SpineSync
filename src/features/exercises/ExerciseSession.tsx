@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { CircleCheckBig, Pause, Play, Plus, RotateCcw, SkipForward, Square, TriangleAlert, Volume2, VolumeX } from 'lucide-react'
 import type { ExerciseId } from '@/types/recovery'
-import { formatDose, getExercise, isTimedActivity, sideForSet } from '@/data/exercises'
+import { formatDose, isTimedActivity, sideForSet } from '@/data/exercises'
 import { completeSet, logRep, markComplete, markSkipped, resetProgress } from '@/lib/exerciseProgress'
 import { playCue, primeAudio } from '@/lib/cues'
 import { useHoldTimer } from '@/hooks/useHoldTimer'
@@ -10,14 +10,17 @@ import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { Sheet } from '@/components/ui/Sheet'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { useI18n } from '@/i18n'
 import { HoldTimerRing } from './HoldTimerRing'
 
 export function ExerciseSession({ exerciseId, onClose }: { exerciseId: ExerciseId | null; onClose: () => void }) {
   const progress = useRecoveryStore((s) => s.daily_log.exercises_completed.find((e) => e.exercise_id === exerciseId))
   const updateExercise = useRecoveryStore((s) => s.updateExercise)
+  const { m } = useI18n()
   if (!exerciseId || !progress) return null
 
-  const def = getExercise(exerciseId)
+  const def = m.exercises[exerciseId]
+  const t = m.session
   const done = progress.status === 'completed'
 
   return (
@@ -27,18 +30,18 @@ export function ExerciseSession({ exerciseId, onClose }: { exerciseId: ExerciseI
       title={def.name}
       subtitle={
         <span className="flex flex-wrap items-center gap-1.5">
-          {formatDose(progress)}
-          {progress.effort_note && <Badge tone="info">{progress.effort_note}</Badge>}
+          {formatDose(progress, m)}
+          {progress.effort_note && <Badge tone="info">{m.effort[progress.effort_note]}</Badge>}
         </span>
       }
       footer={
         done ? (
           <div className="flex gap-2">
             <Button variant="secondary" onClick={() => updateExercise(exerciseId, resetProgress)}>
-              <RotateCcw className="size-4" /> Redo
+              <RotateCcw className="size-4" /> {t.redo}
             </Button>
             <Button variant="success" className="flex-1" onClick={onClose}>
-              <CircleCheckBig className="size-4" /> Completed
+              <CircleCheckBig className="size-4" /> {t.completed}
             </Button>
           </div>
         ) : (
@@ -50,7 +53,7 @@ export function ExerciseSession({ exerciseId, onClose }: { exerciseId: ExerciseI
                 onClose()
               }}
             >
-              <SkipForward className="size-4" /> Skip
+              <SkipForward className="size-4 rtl:-scale-x-100" /> {t.skip}
             </Button>
             <Button
               className="flex-1"
@@ -59,7 +62,7 @@ export function ExerciseSession({ exerciseId, onClose }: { exerciseId: ExerciseI
                 onClose()
               }}
             >
-              <CircleCheckBig className="size-4" /> Mark complete
+              <CircleCheckBig className="size-4" /> {t.markComplete}
             </Button>
           </div>
         )
@@ -68,7 +71,7 @@ export function ExerciseSession({ exerciseId, onClose }: { exerciseId: ExerciseI
       <SessionTimer key={`${exerciseId}-${progress.hold_seconds}`} exerciseId={exerciseId} />
 
       <section className="mt-6">
-        <h3 className="cap text-mute">How to do it</h3>
+        <h3 className="cap text-mute">{t.howTo}</h3>
         <p className="mt-1 text-xs text-mute">{def.target}</p>
         <ol className="mt-3 space-y-2">
           {def.steps.map((step, i) => (
@@ -79,15 +82,15 @@ export function ExerciseSession({ exerciseId, onClose }: { exerciseId: ExerciseI
           ))}
         </ol>
       </section>
-      <section className="mt-4 rounded-[4px_12px_12px_4px] border-l-4 border-warning bg-well p-3">
+      <section className="mt-4 rounded-e-[12px] rounded-s-[4px] border-s-4 border-warning bg-well p-3">
         <h3 className="flex items-center gap-1.5 text-xs font-semibold text-warning">
-          <TriangleAlert className="size-3.5" /> Safety
+          <TriangleAlert className="size-3.5" /> {t.safety}
         </h3>
         <ul className="mt-1 space-y-0.5 text-xs text-ink/80">
           {def.cautions.map((c) => (
             <li key={c}>• {c}</li>
           ))}
-          <li>• Stop straight away if pain spreads into your arm or gets sharply worse.</li>
+          <li>• {t.stopRule}</li>
         </ul>
       </section>
     </Sheet>
@@ -99,6 +102,8 @@ function SessionTimer({ exerciseId }: { exerciseId: ExerciseId }) {
   const updateExercise = useRecoveryStore((s) => s.updateExercise)
   const sound = useRecoveryStore((s) => s.preferences.sound_enabled)
   const setSound = useRecoveryStore((s) => s.setSoundEnabled)
+  const { m, n } = useI18n()
+  const t = m.session
   const timed = isTimedActivity(exerciseId)
   const done = progress.status === 'completed'
 
@@ -125,6 +130,8 @@ function SessionTimer({ exerciseId }: { exerciseId: ExerciseId }) {
 
   const setIndex = Math.min(progress.sets_done, progress.target_sets - 1)
   const side = sideForSet(exerciseId, setIndex)
+  const started = progress.sets_done > 0 || progress.reps_done > 0
+  const startLabel = timed ? (started ? t.restart : t.start) : started ? t.startNextSet : t.startSet
 
   return (
     <div className="flex flex-col items-center rounded-3xl border border-line/60 bg-well px-4 pt-5 pb-4">
@@ -133,8 +140,8 @@ function SessionTimer({ exerciseId }: { exerciseId: ExerciseId }) {
         <button
           type="button"
           onClick={() => setSound(!sound)}
-          className="absolute -top-1 -right-10 grid size-10 place-items-center rounded-full text-dim hover:bg-panel-2 hover:text-ink"
-          aria-label={sound ? 'Mute sounds' : 'Unmute sounds'}
+          className="absolute -top-1 -end-10 grid size-10 place-items-center rounded-full text-dim hover:bg-panel-2 hover:text-ink"
+          aria-label={sound ? t.mute : t.unmute}
         >
           {sound ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
         </button>
@@ -143,25 +150,25 @@ function SessionTimer({ exerciseId }: { exerciseId: ExerciseId }) {
       {!timed && (
         <div className="mt-4 grid w-full grid-cols-2 gap-2 text-center">
           <div className="rounded-xl bg-panel-2 p-2">
-            <p className="cap text-[10px] text-mute">Set</p>
+            <p className="cap text-[10px] text-mute">{t.set}</p>
             <p className="text-lg font-bold text-ink tabular-nums">
-              {done ? progress.target_sets : setIndex + 1}
-              <span className="text-sm font-medium text-dim">/{progress.target_sets}</span>
+              {n(done ? progress.target_sets : setIndex + 1)}
+              <span className="text-sm font-medium text-dim">/{n(progress.target_sets)}</span>
             </p>
-            {side && <p className="truncate text-[11px] font-semibold text-brand">{side}</p>}
+            {side && <p className="truncate text-[11px] font-semibold text-brand">{m.sides[side]}</p>}
           </div>
           <div className="rounded-xl bg-panel-2 p-2">
-            <p className="cap text-[10px] text-mute">Rep</p>
+            <p className="cap text-[10px] text-mute">{t.rep}</p>
             <p className="text-lg font-bold text-ink tabular-nums">
-              {progress.reps_done}
-              <span className="text-sm font-medium text-dim">/{progress.target_reps}</span>
+              {n(progress.reps_done)}
+              <span className="text-sm font-medium text-dim">/{n(progress.target_reps)}</span>
             </p>
           </div>
         </div>
       )}
 
       {done ? (
-        <p className="mt-4 animate-pop text-sm font-semibold text-success">Nice work, all done for today.</p>
+        <p className="mt-4 animate-pop text-sm font-semibold text-success">{t.allDone}</p>
       ) : (
         <div className="mt-4 flex w-full items-center justify-center gap-2">
           {!timer.running && timer.phase === 'idle' && (
@@ -172,28 +179,27 @@ function SessionTimer({ exerciseId }: { exerciseId: ExerciseId }) {
                 timer.start()
               }}
             >
-              <Play className="size-4" /> {progress.sets_done > 0 || progress.reps_done > 0 ? (timed ? 'Restart' : 'Start next') : 'Start'}
-              {!timed && ' set'}
+              <Play className="size-4 rtl:-scale-x-100" /> {startLabel}
             </Button>
           )}
           {timer.running && (
             <Button variant="secondary" className="flex-1" onClick={timer.pause}>
-              <Pause className="size-4" /> Pause
+              <Pause className="size-4" /> {t.pause}
             </Button>
           )}
           {!timer.running && timer.phase !== 'idle' && (
             <>
               <Button className="flex-1" onClick={timer.resume}>
-                <Play className="size-4" /> Resume
+                <Play className="size-4 rtl:-scale-x-100" /> {t.resume}
               </Button>
-              <Button variant="secondary" onClick={timer.stop} aria-label="Stop timer">
+              <Button variant="secondary" onClick={timer.stop} aria-label={t.stop}>
                 <Square className="size-4" />
               </Button>
             </>
           )}
           {!timed && (
-            <Button variant="secondary" onClick={() => updateExercise(exerciseId, logRep)} aria-label="Log one rep manually">
-              <Plus className="size-4" /> Rep
+            <Button variant="secondary" onClick={() => updateExercise(exerciseId, logRep)} aria-label={t.logRep}>
+              <Plus className="size-4" /> {t.rep}
             </Button>
           )}
         </div>
@@ -207,7 +213,7 @@ function SessionTimer({ exerciseId }: { exerciseId: ExerciseId }) {
           }}
           className="mt-2 min-h-10 text-xs font-bold tracking-[0.04em] text-brand uppercase"
         >
-          Finish this set now
+          {t.finishSet}
         </button>
       )}
     </div>

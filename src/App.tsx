@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState } from 'react'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { useDayRollover } from '@/hooks/useDayRollover'
+import { useDocumentLang, useI18n } from '@/i18n'
 import { AppShell } from '@/components/layout/AppShell'
 import type { TabId } from '@/components/layout/tabs'
 import { Onboarding } from '@/features/onboarding/Onboarding'
@@ -13,6 +14,8 @@ const ProgressDashboard = lazy(() => import('@/features/progress/ProgressDashboa
 
 export default function App() {
   useDayRollover()
+  useDocumentLang()
+  const { m } = useI18n()
   const onboarded = useRecoveryStore((s) => s.program.onboarded)
   const [tab, setTab] = useState<TabId>('today')
 
@@ -24,7 +27,7 @@ export default function App() {
       {tab === 'exercises' && <ExerciseTracker onNavigate={setTab} />}
       {tab === 'ergonomics' && <ErgoGuide />}
       {tab === 'progress' && (
-        <Suspense fallback={<div className="grid h-64 place-items-center text-sm text-dim">Loading charts…</div>}>
+        <Suspense fallback={<div className="grid h-64 place-items-center text-sm text-dim">{m.progress.loading}</div>}>
           <ProgressDashboard />
         </Suspense>
       )}

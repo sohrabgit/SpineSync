@@ -6,7 +6,7 @@
  * every colour in the app must come from one of the tokens below.
  */
 @theme {
-  --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "DM Sans", "Vazirmatn", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   --color-*: initial;
   --color-white: #ffffff;
@@ -103,6 +103,15 @@
   ::placeholder {
     color: var(--color-dim);
   }
+
+  /* Persian: Vazirmatn first, and no letter-spacing (it breaks cursive joining). */
+  :root:lang(fa) {
+    --font-sans: "Vazirmatn", "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, sans-serif;
+  }
+  :lang(fa) *,
+  :lang(fa) {
+    letter-spacing: normal !important;
+  }
 }
 
 /* VAS slider */
@@ -113,6 +122,10 @@
   height: 10px;
   border-radius: 9999px;
   background: linear-gradient(90deg, #72d39c 0%, #f2c86b 40%, #f3a66a 65%, #f2706b 100%);
+}
+/* Range inputs run right-to-left in RTL, so the colour ramp flips with them. */
+[dir='rtl'] .vas-range {
+  background: linear-gradient(270deg, #72d39c 0%, #f2c86b 40%, #f3a66a 65%, #f2706b 100%);
 }
 .vas-range::-webkit-slider-thumb {
   -webkit-appearance: none;

@@ -15,12 +15,25 @@ export function ndiScore(answers: NdiAnswer[]): number | null {
 
 export type Tone = 'positive' | 'info' | 'warning' | 'critical'
 
-export function ndiBand(score: number): { label: string; tone: Tone } {
-  if (score < 10) return { label: 'No disability', tone: 'positive' }
-  if (score < 30) return { label: 'Mild', tone: 'info' }
-  if (score < 50) return { label: 'Moderate', tone: 'warning' }
-  if (score < 70) return { label: 'Severe', tone: 'critical' }
-  return { label: 'Complete', tone: 'critical' }
+export type NdiBandId = 'none' | 'mild' | 'moderate' | 'severe' | 'complete'
+
+export function ndiBand(score: number): { id: NdiBandId; tone: Tone } {
+  if (score < 10) return { id: 'none', tone: 'positive' }
+  if (score < 30) return { id: 'mild', tone: 'info' }
+  if (score < 50) return { id: 'moderate', tone: 'warning' }
+  if (score < 70) return { id: 'severe', tone: 'critical' }
+  return { id: 'complete', tone: 'critical' }
+}
+
+export type VasBandId = 'none' | 'mild' | 'moderate' | 'distressing' | 'severe' | 'unbearable'
+
+export function vasBand(vas: number): VasBandId {
+  if (vas === 0) return 'none'
+  if (vas <= 2) return 'mild'
+  if (vas <= 4) return 'moderate'
+  if (vas <= 6) return 'distressing'
+  if (vas <= 8) return 'severe'
+  return 'unbearable'
 }
 
 // ─── Compliance ─────────────────────────────────────────────────────────────

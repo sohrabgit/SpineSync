@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 import { ChartLine, Flame, Target, TrendingDown, TrendingUp } from 'lucide-react'
 import type { PlanLevel } from '@/types/recovery'
-import { formatDate } from '@/lib/date'
 import { averageAdherence, checkinStreak, flareDayCount, painDelta } from '@/lib/metrics'
 import { PROGRAM_DAYS } from '@/lib/program'
+import { FLARE_VAS_THRESHOLD } from '@/lib/adaptive'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { Card } from '@/components/ui/Card'
-import { LEVEL_META } from '@/components/ui/tone'
+import { useI18n } from '@/i18n'
 import { AdherenceChart } from './AdherenceChart'
 import { CHART } from './chartTheme'
 import { NdiSummary } from './NdiSummary'
@@ -26,6 +26,8 @@ export function ProgressDashboard() {
   const today = useRecoveryStore((s) => s.daily_log)
   const currentDay = useRecoveryStore((s) => s.current_day)
   const assessments = useRecoveryStore((s) => s.ndi_assessments)
+  const { m, n, date } = useI18n()
+  const t = m.progress
 
   const logs = useMemo(() => [...history, today], [history, today])
   const points: DayPoint[] = useMemo(
@@ -52,46 +54,44 @@ export function ProgressDashboard() {
   return (
     <div className="space-y-5">
       <div className="px-1">
-        <h1 className="text-xl font-bold tracking-tight text-ink">Your progress</h1>
-        <p className="text-sm text-mute">
-          {checkins} check-in{checkins === 1 ? '' : 's'} logged over {Math.min(currentDay, maxDay)} day{currentDay === 1 ? '' : 's'}
-        </p>
+        <h1 className="text-xl font-bold tracking-tight text-ink">{t.title}</h1>
+        <p className="text-sm text-mute">{t.summary(checkins, Math.min(currentDay, maxDay))}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <StatTile
-          label="Pain delta"
+          label={t.painDelta}
           icon={delta && delta.delta < 0 ? TrendingUp : TrendingDown}
           iconClass={delta && delta.delta < 0 ? 'bg-warning text-bg' : 'bg-success text-bg'}
-          value={delta ? `${delta.delta > 0 ? '−' : delta.delta < 0 ? '+' : ''}${Math.abs(delta.delta)}` : '—'}
-          hint={delta ? `${delta.baseline} → ${delta.recent} (first vs last ${delta.window}d)` : 'Needs 2+ check-ins'}
+          value={delta ? `${delta.delta > 0 ? '−' : delta.delta < 0 ? '+' : ''}${n(Math.abs(delta.delta))}` : '—'}
+          hint={delta ? t.painDeltaHint(delta.baseline, delta.recent, delta.window) : t.needsTwo}
         />
-        <StatTile label="Avg adherence" icon={Target} value={avgAdherence !== null ? `${Math.round(avgAdherence)}%` : '—'} hint="Exercises + ergonomics" />
-        <StatTile label="Check-in streak" icon={ChartLine} value={`${streak} day${streak === 1 ? '' : 's'}`} hint="Consecutive days logged" />
-        <StatTile label="Flare-up days" icon={Flame} iconClass="bg-danger text-bg" value={String(flares)} hint={flares ? 'Rest-protocol days' : 'None so far'} />
+        <StatTile label={t.avgAdherence} icon={Target} value={avgAdherence !== null ? n(`${Math.round(avgAdherence)}%`) : '—'} hint={t.adherenceHint} />
+        <StatTile label={t.streak} icon={ChartLine} value={t.streakValue(streak)} hint={t.streakHint} />
+        <StatTile label={t.flareDays} icon={Flame} iconClass="bg-danger text-bg" value={n(flares)} hint={flares ? t.flareHint : t.noneYet} />
       </div>
 
       <Card>
         <div className="mb-2 flex items-start justify-between gap-2">
           <div>
-            <h2 className="text-sm font-semibold text-ink">Pain trend (VAS)</h2>
-            <p className="text-xs text-mute">0 = no pain, 10 = unbearable. Lower is better.</p>
+            <h2 className="text-sm font-semibold text-ink">{t.painTrend}</h2>
+            <p className="text-xs text-mute">{t.painTrendHint}</p>
           </div>
         </div>
         {checkins === 0 ? (
-          <EmptyChart text="Your pain trend will appear after your first check-in." />
+          <EmptyChart text={t.painEmpty} />
         ) : (
           <>
             <PainTrendChart data={points} maxDay={maxDay} />
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-mute">
               <span className="inline-flex items-center gap-1.5">
-                <span className="size-2 rounded-full" style={{ backgroundColor: CHART.series }} /> Daily pain
+                <span className="size-2 rounded-full" style={{ backgroundColor: CHART.series }} /> {t.dailyPain}
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="size-2 rounded-full" style={{ backgroundColor: CHART.critical }} /> Flare-up / paused day
+                <span className="size-2 rounded-full" style={{ backgroundColor: CHART.critical }} /> {t.flareDot}
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="h-px w-3" style={{ backgroundColor: CHART.critical }} /> Flare threshold (7)
+                <span className="h-px w-3" style={{ backgroundColor: CHART.critical }} /> {t.thresholdN(FLARE_VAS_THRESHOLD)}
               </span>
             </div>
           </>
@@ -99,43 +99,43 @@ export function ProgressDashboard() {
       </Card>
 
       <Card>
-        <h2 className="text-sm font-semibold text-ink">Daily adherence</h2>
-        <p className="mb-2 text-xs text-mute">(Completed exercises + ergonomic tasks) ÷ scheduled tasks</p>
-        {points.every((p) => p.adherence === null) ? <EmptyChart text="Complete an exercise or checklist item to start tracking." /> : <AdherenceChart data={points} maxDay={maxDay} />}
+        <h2 className="text-sm font-semibold text-ink">{t.adherenceTitle}</h2>
+        <p className="mb-2 text-xs text-mute">{t.adherenceFormula}</p>
+        {points.every((p) => p.adherence === null) ? <EmptyChart text={t.adherenceEmpty} /> : <AdherenceChart data={points} maxDay={maxDay} />}
       </Card>
 
       <Card>
-        <h2 className="text-sm font-semibold text-ink">Neck Disability Index</h2>
-        <p className="mb-3 text-xs text-mute">Taken on days 1, 15 and 30. Lower is better.</p>
+        <h2 className="text-sm font-semibold text-ink">{t.ndiTitle}</h2>
+        <p className="mb-3 text-xs text-mute">{t.ndiHint}</p>
         <NdiSummary assessments={assessments} />
       </Card>
 
       {checkins > 0 && (
         <details className="group rounded-2xl border border-line/60 bg-panel">
           <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 text-sm font-semibold text-ink">
-            Daily log table
-            <span className="cap text-[11px] text-brand group-open:hidden">Show</span>
-            <span className="cap hidden text-[11px] text-brand group-open:inline">Hide</span>
+            {t.logTable}
+            <span className="cap text-[11px] text-brand group-open:hidden">{t.show}</span>
+            <span className="cap hidden text-[11px] text-brand group-open:inline">{t.hide}</span>
           </summary>
           <div className="overflow-x-auto px-2 pb-3">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-start text-xs">
               <thead className="text-mute">
                 <tr>
-                  <th className="px-2 py-1.5 font-medium">Day</th>
-                  <th className="px-2 py-1.5 font-medium">Date</th>
-                  <th className="px-2 py-1.5 text-right font-medium">VAS</th>
-                  <th className="px-2 py-1.5 font-medium">Plan</th>
-                  <th className="px-2 py-1.5 text-right font-medium">Adherence</th>
+                  <th className="px-2 py-1.5 text-start font-medium">{t.colDay}</th>
+                  <th className="px-2 py-1.5 text-start font-medium">{t.colDate}</th>
+                  <th className="px-2 py-1.5 text-end font-medium">{t.colVas}</th>
+                  <th className="px-2 py-1.5 text-start font-medium">{t.colPlan}</th>
+                  <th className="px-2 py-1.5 text-end font-medium">{t.colAdherence}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line/70 text-ink/90 tabular-nums">
                 {[...points].reverse().map((p) => (
                   <tr key={p.date}>
-                    <td className="px-2 py-1.5 font-semibold">{p.day}</td>
-                    <td className="px-2 py-1.5">{formatDate(p.date, { month: 'short', day: 'numeric' })}</td>
-                    <td className="px-2 py-1.5 text-right">{p.vas ?? '—'}</td>
-                    <td className="px-2 py-1.5">{p.level ? LEVEL_META[p.level].short : '—'}</td>
-                    <td className="px-2 py-1.5 text-right">{p.adherence !== null ? `${p.adherence}%` : '—'}</td>
+                    <td className="px-2 py-1.5 font-semibold">{n(p.day)}</td>
+                    <td className="px-2 py-1.5">{date(p.date, { month: 'short', day: 'numeric' })}</td>
+                    <td className="px-2 py-1.5 text-end">{p.vas !== null ? n(p.vas) : '—'}</td>
+                    <td className="px-2 py-1.5">{p.level ? m.levels[p.level].short : '—'}</td>
+                    <td className="px-2 py-1.5 text-end">{p.adherence !== null ? n(`${p.adherence}%`) : '—'}</td>
                   </tr>
                 ))}
               </tbody>
