@@ -20,7 +20,7 @@ export function Toggle({ checked, onChange, label, tone = 'success' }: TogglePro
         checked ? (tone === 'danger' ? 'bg-danger' : 'bg-success') : 'border border-line bg-panel-2',
       )}
     >
-      <span className={cn('inline-block size-5 rounded-full shadow transition-transform duration-200', checked ? 'bg-bg' : 'bg-mute', checked ? 'translate-x-6' : 'translate-x-1')} />
+      <span className={cn('inline-block size-5 rounded-full shadow transition-transform duration-200', checked ? 'bg-bg' : 'bg-mute', checked ? 'translate-x-6 rtl:-translate-x-6' : 'translate-x-1 rtl:-translate-x-1')} />
     </button>
   )
 }

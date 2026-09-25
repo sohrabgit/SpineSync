@@ -1,4 +1,4 @@
-/** Audio + haptic cues for the hold timer. Uses the Web Audio API — no assets required. */
+/** Audio + haptic cues for the hold timer and Work mode reminders. Uses the Web Audio API — no assets required. */
 
 let ctx: AudioContext | null = null
 
@@ -12,12 +12,14 @@ export function primeAudio(): void {
   }
 }
 
-export type Cue = 'hold-start' | 'hold-end' | 'set-done'
+export type Cue = 'hold-start' | 'hold-end' | 'set-done' | 'break-due' | 'eye-nudge'
 
 const TONES: Record<Cue, { freq: number; ms: number; vibrate: number | number[] }> = {
   'hold-start': { freq: 660, ms: 90, vibrate: 40 },
   'hold-end': { freq: 880, ms: 140, vibrate: 90 },
   'set-done': { freq: 1046, ms: 260, vibrate: [80, 60, 80] },
+  'break-due': { freq: 784, ms: 420, vibrate: [200, 100, 200, 100, 200] },
+  'eye-nudge': { freq: 523, ms: 160, vibrate: 60 },
 }
 
 export function playCue(cue: Cue, sound: boolean): void {

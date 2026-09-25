@@ -48,15 +48,17 @@ export type ExerciseId =
 
 export type ExerciseCategory = 'mobility' | 'isometric' | 'stretch' | 'strength' | 'cardio' | 'modality' | 'rest'
 
+export type SideId = 'forward' | 'backward' | 'right' | 'left'
+
+/** Effort cue shown next to a dose; translated at render time. */
+export type EffortId = 'very_gentle' | 'non_resisted' | 'half' | 'full'
+
+/** Structural exercise data. Names, steps and cautions live in the i18n messages. */
 export interface ExerciseDefinition {
   id: ExerciseId
-  name: string
   category: ExerciseCategory
-  target: string
-  steps: string[]
-  cautions: string[]
-  /** Labels cycled across sets, e.g. four isometric directions or left/right sides. */
-  sides?: string[]
+  /** Sides cycled across sets, e.g. four isometric directions or left/right. */
+  sides?: SideId[]
 }
 
 /** A dose prescription for one exercise at a given tier. */
@@ -66,7 +68,7 @@ export interface Prescription {
   sets: number
   reps: number
   hold_seconds: number
-  effort_note?: string
+  effort_note?: EffortId
 }
 
 export type ExerciseStatus = 'pending' | 'in_progress' | 'completed' | 'skipped'
@@ -82,7 +84,7 @@ export interface ExerciseProgress {
   target_sets: number
   target_reps: number
   hold_seconds: number
-  effort_note?: string
+  effort_note?: EffortId
 }
 
 // ─── Ergonomics ─────────────────────────────────────────────────────────────
@@ -96,19 +98,16 @@ export type ErgoCategoryId =
   | 'childcare'
   | 'sleep'
   | 'shopping'
-  | 'intimacy'
+  | 'cycling'
   | 'devices'
 
+/** Task ids double as `ergonomics_checklist` keys; labels live in the i18n messages. */
 export interface ErgoTask {
   id: string
-  label: string
-  detail?: string
 }
 
 export interface ErgoCategory {
   id: ErgoCategoryId
-  name: string
-  blurb: string
   /** Core categories are always part of the daily plan. */
   core: boolean
   tasks: ErgoTask[]
@@ -119,6 +118,34 @@ export type ErgonomicsChecklist = {
   hourly_breaks_count: number
   sleeping_position_adhered: boolean
 } & { [taskId: string]: boolean | number }
+
+// ─── Work mode ──────────────────────────────────────────────────────────────
+
+export type BreakInterval = 1 | 30 | 45 | 60
+
+/** An active desk-work session. All timestamps are epoch milliseconds. */
+export interface WorkSession {
+  started_at: number
+  /** Minutes between movement breaks (1 is a dev-only testing interval). */
+  interval_min: BreakInterval
+  /** 20-20-20 eye nudges between movement breaks. */
+  eye_nudges: boolean
+  /** Session start, or the most recent break. */
+  last_break_at: number
+  snoozed_until: number | null
+  /** Movement breaks taken during this session. */
+  breaks: number
+  /** When the latest 20-20-20 eye nudge started. */
+  last_eye_at: number | null
+}
+
+export type PostureIssue = 'chin' | 'shoulders' | 'screen'
+
+export interface PostureChecks {
+  total: number
+  /** How many checks flagged each issue. */
+  issues: Record<PostureIssue, number>
+}
 
 // ─── Daily log ──────────────────────────────────────────────────────────────
 
@@ -133,6 +160,10 @@ export interface DailyLog {
   exercises_completed: ExerciseProgress[]
   ergonomics_checklist: ErgonomicsChecklist
   daily_compliance_percentage: number
+  /** Additive: minutes spent in Work mode sessions. */
+  work_minutes?: number
+  /** Additive: posture self-checks answered at the end of breaks. */
+  posture_checks?: PostureChecks
 }
 
 // ─── NDI ────────────────────────────────────────────────────────────────────

@@ -27,8 +27,3 @@ export function addDays(iso: string, days: number): string {
 export function appToday(offsetDays = 0, now: Date = new Date()): string {
   return addDays(toISODate(now), offsetDays)
 }
-
-export function formatDate(iso: string, opts: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric' }): string {
-  const [y, m, d] = iso.split('-').map(Number)
-  return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1).toLocaleDateString(undefined, opts)
-}

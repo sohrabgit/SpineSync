@@ -1,7 +1,9 @@
-import type { RecoveryData } from '@/types/recovery'
+import type { RecoveryData, WorkSession } from '@/types/recovery'
+import type { Messages } from '@/i18n/en'
 import { BREAK_GOAL } from '@/data/ergonomics'
 import { PHASES, PROGRAM_DAYS } from './program'
 import { averageAdherence, checkedInLogs, ndiBand, painDelta, type Tone } from './metrics'
+import { MINUTE_MS, msUntilBreak, OVERDUE_NUDGE_MS } from './workMode'
 
 export interface Insight {
   id: string
@@ -17,7 +19,8 @@ const NDI_MEANINGFUL_CHANGE = 7.5
  * Local, rule-based recovery coach. Deterministic and offline — no API calls, no cost.
  * Returns insights ordered by priority: safety → today → trends → adherence → milestones.
  */
-export function getInsights(data: RecoveryData, now: Date = new Date(), limit = 4): Insight[] {
+export function getInsights(data: RecoveryData & { work_session?: WorkSession | null }, m: Messages, now: Date = new Date(), limit = 4): Insight[] {
+  const c = m.coach
   const out: Insight[] = []
   const today = data.daily_log
   const checkin = today.pain_checkin
@@ -26,31 +29,31 @@ export function getInsights(data: RecoveryData, now: Date = new Date(), limit = 
 
   // Safety
   if (today.adapted_plan_level === 'medical_pause') {
-    out.push({ id: 'red-flag', tone: 'critical', title: 'Seek medical review today', body: 'You reported a red-flag symptom. Exercises are paused. Contact your doctor or emergency services if symptoms are severe or getting worse.' })
+    out.push({ id: 'red-flag', tone: 'critical', ...c.redFlag })
   } else if (today.adapted_plan_level === 'flare_up') {
     const prev = logged.filter((l) => l.date < today.date).at(-1)
     const consecutive = prev?.adapted_plan_level === 'flare_up'
     out.push(
       consecutive
-        ? { id: 'flare-streak', tone: 'critical', title: 'Second flare-up day in a row', body: 'Pain has stayed high or arm pain continues. Book a clinical review if this lasts beyond 48 hours.' }
-        : { id: 'flare', tone: 'warning', title: 'Flare-up protocol active', body: 'Today is about calming things down: cold therapy first, supported rest, then gentle heat. Skip anything that loads the neck.' },
+        ? { id: 'flare-streak', tone: 'critical', ...c.flareStreak }
+        : { id: 'flare', tone: 'warning', ...c.flare },
     )
   }
   if (checkin?.numbness_present && today.adapted_plan_level !== 'medical_pause') {
-    out.push({ id: 'numbness', tone: 'warning', title: 'Keep an eye on the numbness', body: 'Note where you feel it. Numbness in both arms, or numbness that spreads or gets worse, is a red flag. Re-check in if that happens.' })
+    out.push({ id: 'numbness', tone: 'warning', ...c.numbness })
   }
 
   if (!checkin) {
-    out.push({ id: 'checkin', tone: 'info', title: 'Start with your morning check-in', body: 'Your pain score sets today’s plan, so log it before you exercise.' })
+    out.push({ id: 'checkin', tone: 'info', ...c.checkin })
   }
 
   // Phase milestone
   const phaseInfo = PHASES[data.phase]
   if (data.current_day === phaseInfo.startDay && data.current_day > 1) {
-    out.push({ id: 'phase', tone: 'positive', title: `Phase ${data.phase}: ${phaseInfo.name}`, body: phaseInfo.focus })
+    out.push({ id: 'phase', tone: 'positive', title: c.phase(data.phase, m.phases[data.phase].name), body: m.phases[data.phase].focus })
   }
   if (data.current_day > PROGRAM_DAYS) {
-    out.push({ id: 'complete', tone: 'positive', title: 'Program complete', body: 'Keep the habits going: daily chin tucks, workstation checks and movement breaks.' })
+    out.push({ id: 'complete', tone: 'positive', ...c.complete })
   }
 
   // Short-term trend: last 3 vs previous 3 check-ins
@@ -60,25 +63,31 @@ export function getInsights(data: RecoveryData, now: Date = new Date(), limit = 
     const recent = vas.slice(-k).reduce((a, b) => a + b, 0) / k
     const before = vas.slice(-2 * k, -k).reduce((a, b) => a + b, 0) / k
     const diff = before - recent
-    if (diff >= 1) out.push({ id: 'trend-up', tone: 'positive', title: 'Pain is easing', body: `Your average VAS fell by ${diff.toFixed(1)} points over your last ${k} check-ins. Keep up the routine.` })
-    else if (diff <= -1) out.push({ id: 'trend-down', tone: 'warning', title: 'Pain is creeping up', body: `Your average VAS rose by ${Math.abs(diff).toFixed(1)} points. Check your sleep setup and screen height, and avoid long stretches looking down.` })
+    if (diff >= 1) out.push({ id: 'trend-up', tone: 'positive', title: c.trendUp.title, body: c.trendUp.body(diff.toFixed(1), k) })
+    else if (diff <= -1) out.push({ id: 'trend-down', tone: 'warning', title: c.trendDown.title, body: c.trendDown.body(Math.abs(diff).toFixed(1)) })
   }
 
   const delta = painDelta(logs)
   if (delta && delta.window === 3 && delta.delta >= 2) {
-    out.push({ id: 'delta', tone: 'positive', title: `Down ${delta.delta} points since you started`, body: `Your first 3 days averaged ${delta.baseline}/10 and your latest 3 average ${delta.recent}/10.` })
+    out.push({ id: 'delta', tone: 'positive', title: c.delta.title(delta.delta), body: c.delta.body(delta.baseline, delta.recent) })
   }
 
   // Adherence
   const recentAdherence = averageAdherence(logs.slice(-4, -1))
   if (recentAdherence !== null && data.history.length >= 2) {
-    if (recentAdherence >= 80) out.push({ id: 'adherence-high', tone: 'positive', title: 'Strong consistency', body: `You’ve averaged ${recentAdherence}% of your plan recently. Showing up consistently is what drives recovery.` })
-    else if (recentAdherence < 50) out.push({ id: 'adherence-low', tone: 'info', title: 'Small steps count', body: 'Recent adherence is under 50%. Try tying chin tucks to things you already do, like coffee, red lights or meetings.' })
+    if (recentAdherence >= 80) out.push({ id: 'adherence-high', tone: 'positive', title: c.adherenceHigh.title, body: c.adherenceHigh.body(recentAdherence) })
+    else if (recentAdherence < 50) out.push({ id: 'adherence-low', tone: 'info', ...c.adherenceLow })
   }
 
-  // Breaks nudge in the afternoon
-  if (checkin && now.getHours() >= 15 && today.ergonomics_checklist.hourly_breaks_count < BREAK_GOAL) {
-    out.push({ id: 'breaks', tone: 'info', title: 'Time for a movement break', body: `You’ve logged ${today.ergonomics_checklist.hourly_breaks_count}/${BREAK_GOAL} breaks today. Stand up, roll your shoulders and do 5 chin tucks.` })
+  // Breaks: an overdue Work mode break, otherwise a nudge in the afternoon
+  const session = data.work_session
+  if (session) {
+    if (-msUntilBreak(session, now.getTime()) >= OVERDUE_NUDGE_MS) {
+      const sitting = Math.floor((now.getTime() - session.last_break_at) / MINUTE_MS)
+      out.push({ id: 'sitting', tone: 'info', title: c.sitting.title(sitting), body: c.sitting.body })
+    }
+  } else if (checkin && now.getHours() >= 15 && today.ergonomics_checklist.hourly_breaks_count < BREAK_GOAL) {
+    out.push({ id: 'breaks', tone: 'info', title: c.breaks.title, body: c.breaks.body(today.ergonomics_checklist.hourly_breaks_count, BREAK_GOAL) })
   }
 
   // NDI change
@@ -88,9 +97,9 @@ export function getInsights(data: RecoveryData, now: Date = new Date(), limit = 
   if (first && last && ndi.length >= 2) {
     const change = first.score_pct - last.score_pct
     if (change >= NDI_MEANINGFUL_CHANGE) {
-      out.push({ id: 'ndi', tone: 'positive', title: 'Meaningful NDI improvement', body: `Your disability score improved from ${first.score_pct}% to ${last.score_pct}% (${ndiBand(last.score_pct).label.toLowerCase()}).` })
+      out.push({ id: 'ndi', tone: 'positive', title: c.ndiBetter.title, body: c.ndiBetter.body(first.score_pct, last.score_pct, m.ndiBands[ndiBand(last.score_pct).id]) })
     } else if (change <= -NDI_MEANINGFUL_CHANGE) {
-      out.push({ id: 'ndi-worse', tone: 'warning', title: 'NDI score has increased', body: `Your disability score went from ${first.score_pct}% to ${last.score_pct}%. Consider discussing this with your clinician.` })
+      out.push({ id: 'ndi-worse', tone: 'warning', title: c.ndiWorse.title, body: c.ndiWorse.body(first.score_pct, last.score_pct) })
     }
   }
 

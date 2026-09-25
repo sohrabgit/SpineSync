@@ -1,14 +1,19 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { SettingsSheet } from '@/features/settings/SettingsSheet'
+import { BreakSheet } from '@/features/ergonomics/BreakSheet'
+import { useWorkModeAlerts } from '@/hooks/useWorkModeAlerts'
 import { BottomNav } from './BottomNav'
 import { Header } from './Header'
 import { StatusBanner } from './StatusBanner'
+import { WorkModeBar } from './WorkModeBar'
 import type { TabId } from './tabs'
 
 export function AppShell({ tab, onTabChange, children }: { tab: TabId; onTabChange: (t: TabId) => void; children: ReactNode }) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const remaining = useRecoveryStore((s) => s.daily_log.exercises_completed.filter((e) => e.status === 'pending' || e.status === 'in_progress').length)
+
+  useWorkModeAlerts()
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
@@ -18,11 +23,13 @@ export function AppShell({ tab, onTabChange, children }: { tab: TabId; onTabChan
     <div className="relative mx-auto min-h-dvh max-w-md bg-bg sm:border-x sm:border-line/60">
       <Header onOpenSettings={() => setSettingsOpen(true)} />
       <StatusBanner />
+      <WorkModeBar hidden={tab === 'ergonomics'} />
       <main key={tab} className="animate-fade-in px-4 pt-4 pb-[calc(7rem+env(safe-area-inset-bottom))]">
         {children}
       </main>
       <BottomNav active={tab} onChange={onTabChange} badges={{ exercises: remaining }} />
       <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <BreakSheet />
     </div>
   )
 }

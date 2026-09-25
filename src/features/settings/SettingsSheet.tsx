@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react'
 import { Download, FastForward, RotateCcw, Upload, Volume2 } from 'lucide-react'
-import { formatDate } from '@/lib/date'
 import { selectData, useRecoveryStore } from '@/store/useRecoveryStore'
 import { Sheet } from '@/components/ui/Sheet'
 import { Button } from '@/components/ui/Button'
 import { Toggle } from '@/components/ui/Toggle'
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
+import { useI18n } from '@/i18n'
 
 export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const startDate = useRecoveryStore((s) => s.program.start_date)
@@ -15,6 +16,8 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
   const resetProgram = useRecoveryStore((s) => s.resetProgram)
   const importData = useRecoveryStore((s) => s.importData)
   const fileRef = useRef<HTMLInputElement>(null)
+  const { m, date } = useI18n()
+  const t = m.settings
   const [confirmReset, setConfirmReset] = useState(false)
   const [message, setMessage] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
 
@@ -27,15 +30,15 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
     a.download = `spinesync-${data.daily_log.date}.json`
     a.click()
     URL.revokeObjectURL(url)
-    setMessage({ tone: 'ok', text: 'Backup downloaded.' })
+    setMessage({ tone: 'ok', text: t.exported })
   }
 
   const onImport = async (file: File) => {
     try {
       importData(JSON.parse(await file.text()))
-      setMessage({ tone: 'ok', text: 'Data restored from backup.' })
-    } catch (e) {
-      setMessage({ tone: 'error', text: e instanceof Error ? e.message : 'Import failed.' })
+      setMessage({ tone: 'ok', text: t.imported })
+    } catch {
+      setMessage({ tone: 'error', text: t.importInvalid })
     }
   }
 
@@ -48,24 +51,29 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
   const row = 'flex items-center justify-between gap-3 py-3'
 
   return (
-    <Sheet open={open} onClose={close} title="Settings" subtitle={`Program started ${formatDate(startDate, { month: 'long', day: 'numeric', year: 'numeric' })}`}>
+    <Sheet open={open} onClose={close} title={m.common.settings} subtitle={t.started(date(startDate, { month: 'long', day: 'numeric', year: 'numeric' }))}>
       <div className="divide-y divide-line/70">
+        <div className={row}>
+          <span className="text-sm font-medium text-ink">{m.common.language}</span>
+          <LanguageSwitcher />
+        </div>
+
         <label className={row}>
           <span className="flex items-center gap-2 text-sm font-medium text-ink">
-            <Volume2 className="size-4 text-mute" /> Timer sounds
+            <Volume2 className="size-4 text-mute" /> {t.sounds}
           </span>
-          <Toggle checked={sound} onChange={setSound} label="Timer sounds" />
+          <Toggle checked={sound} onChange={setSound} label={t.sounds} />
         </label>
 
         <section className="py-3">
-          <h3 className="text-sm font-semibold text-ink">Your data</h3>
-          <p className="mt-0.5 text-xs text-mute">Everything is stored only on this device. Export a backup to move it to another phone or keep it safe.</p>
+          <h3 className="text-sm font-semibold text-ink">{t.dataTitle}</h3>
+          <p className="mt-0.5 text-xs text-mute">{t.dataBody}</p>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Button variant="secondary" onClick={exportData}>
-              <Download className="size-4" /> Export
+              <Download className="size-4" /> {t.export}
             </Button>
             <Button variant="secondary" onClick={() => fileRef.current?.click()}>
-              <Upload className="size-4" /> Import
+              <Upload className="size-4" /> {t.import}
             </Button>
             <input
               ref={fileRef}
@@ -87,23 +95,23 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
         </section>
 
         <section className="py-3">
-          <h3 className="text-sm font-semibold text-ink">Preview mode</h3>
+          <h3 className="text-sm font-semibold text-ink">{t.previewTitle}</h3>
           <p className="mt-0.5 text-xs text-mute">
-            Jump ahead one day to see how phases, NDI checkpoints and adaptive plans progress.
-            {offset > 0 && <strong className="text-warning"> The demo clock is {offset} day{offset === 1 ? '' : 's'} ahead.</strong>}
+            {t.previewBody}
+            {offset > 0 && <strong className="text-warning">{t.clockAhead(offset)}</strong>}
           </p>
           <Button variant="secondary" className="mt-3 w-full" onClick={simulateNextDay}>
-            <FastForward className="size-4" /> Simulate next day
+            <FastForward className="size-4 rtl:-scale-x-100" /> {t.simulate}
           </Button>
         </section>
 
         <section className="py-3">
-          <h3 className="text-sm font-semibold text-danger">Reset program</h3>
-          <p className="mt-0.5 text-xs text-mute">Permanently deletes all check-ins, logs and assessments on this device.</p>
+          <h3 className="text-sm font-semibold text-danger">{t.resetTitle}</h3>
+          <p className="mt-0.5 text-xs text-mute">{t.resetBody}</p>
           {confirmReset ? (
             <div className="mt-3 grid grid-cols-2 gap-2">
               <Button variant="secondary" onClick={() => setConfirmReset(false)}>
-                Cancel
+                {m.common.cancel}
               </Button>
               <Button
                 variant="danger"
@@ -112,18 +120,18 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
                   close()
                 }}
               >
-                Yes, delete all
+                {t.resetConfirm}
               </Button>
             </div>
           ) : (
             <Button variant="secondary" className="mt-3 w-full text-danger" onClick={() => setConfirmReset(true)}>
-              <RotateCcw className="size-4" /> Reset program
+              <RotateCcw className="size-4" /> {t.resetTitle}
             </Button>
           )}
         </section>
 
         <p className="py-4 text-[11px] leading-relaxed text-dim">
-          SpineSync is a self-management tool based on a general cervical disc rehabilitation playbook. It does not diagnose conditions or replace advice from a qualified clinician. Stop any exercise that makes arm symptoms worse.
+          {t.footer}
         </p>
       </div>
     </Sheet>

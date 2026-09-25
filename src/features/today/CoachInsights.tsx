@@ -6,21 +6,23 @@ import { selectData, useRecoveryStore } from '@/store/useRecoveryStore'
 import { TONE_STYLES } from '@/components/ui/tone'
 import { SectionTitle } from '@/components/ui/Card'
 import { cn } from '@/components/ui/cn'
+import { useI18n } from '@/i18n'
 
 const ICONS: Record<Tone, LucideIcon> = { positive: CircleCheckBig, info: Info, warning: TriangleAlert, critical: ShieldAlert }
 
 export function CoachInsights() {
   const data = useRecoveryStore(useShallow(selectData))
-  const insights = getInsights(data)
+  const { m } = useI18n()
+  const insights = getInsights(data, m)
   if (insights.length === 0) return null
 
   return (
-    <section aria-label="Coach insights">
+    <section aria-label={m.coach.aria}>
       <SectionTitle
-        title="Coach"
+        title={m.coach.title}
         action={
           <span className="inline-flex items-center gap-1 text-[11px] text-dim">
-            <Sparkles className="size-3" /> On-device insights
+            <Sparkles className="size-3" /> {m.coach.onDevice}
           </span>
         }
       />
