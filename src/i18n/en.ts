@@ -1,4 +1,4 @@
-import type { EffortId, ErgoCategoryId, ExerciseId, PlanLevel, RedFlagId, SideId, Tier } from '@/types/recovery'
+import type { EffortId, ErgoCategoryId, ExerciseId, PlanLevel, PostureIssue, RedFlagId, SideId, Tier } from '@/types/recovery'
 import type { NdiBandId, VasBandId } from '@/lib/metrics'
 import type { ScheduleBlockId } from '@/data/schedule'
 
@@ -355,6 +355,7 @@ export const en = {
       body: (pct: N) => `You’ve averaged ${pct}% of your plan recently. Showing up consistently is what drives recovery.`,
     },
     adherenceLow: { title: 'Small steps count', body: 'Recent adherence is under 50%. Try tying chin tucks to things you already do, like coffee, red lights or meetings.' },
+    sitting: { title: (min: N) => `You’ve been sitting for ${min} min`, body: 'Your movement break is overdue. Stand up, walk for a minute and do a few chin tucks.' },
     breaks: { title: 'Time for a movement break', body: (count: N, goal: N) => `You’ve logged ${count}/${goal} breaks today. Stand up, roll your shoulders and do 5 chin tucks.` },
     ndiBetter: {
       title: 'Meaningful NDI improvement',
@@ -523,6 +524,68 @@ export const en = {
     mine: 'My day',
     all: (n: N) => `All ${n}`,
     browse: 'Browse driving, cooking, travel, childcare and more',
+  },
+
+  workMode: {
+    title: 'Work mode',
+    intro: 'Start a session when you sit down to work, and SpineSync will remind you to get up and move.',
+    every: 'Break every',
+    minutes: (min: N) => `${min} min`,
+    eyeNudges: '20-20-20 eye reminders',
+    eyeNudgesHint: 'A 20-second “look far away” nudge every 20 minutes',
+    start: 'Start work session',
+    caveat: 'Reminders only work while SpineSync is open (a background tab is fine). On iPhone, add it to your Home Screen first.',
+    nextBreak: 'Next movement break',
+    timeToMove: 'Time to move!',
+    overdueBy: (clock: string) => `Overdue by ${clock}`,
+    workingFor: (duration: string) => `Working for ${duration}`,
+    duration: (h: number, min: number) => (h > 0 ? `${h} h ${min} min` : `${min} min`),
+    sessionBreaks: (done: N) => `Breaks this session: ${done}`,
+    takeBreak: 'Take a break',
+    snooze: (min: N) => `+${min} min`,
+    snoozeAria: (min: N) => `In a meeting: remind me in ${min} minutes`,
+    end: 'End session',
+    countdownAria: (clock: string) => `Next break in ${clock}`,
+    barIn: (clock: string) => `Break in ${clock}`,
+    eyeNow: 'Eye break: look 20 ft (6 m) away',
+    eyeLeft: (sec: N) => `${sec} s`,
+    notifyTitle: 'Time for a movement break',
+    notifyBody: 'Stand up, roll your shoulders and do 5 chin tucks.',
+    sheet: {
+      title: 'Movement break',
+      subtitle: 'About 2 minutes. Move gently and stay within a pain-free range.',
+      moves: [
+        { title: 'Stand up and reach tall', detail: 'Lengthen through the crown of your head and take 3 slow breaths.' },
+        { title: '5 chin tucks', detail: 'Glide your chin straight back, hold for 3 seconds, then relax.' },
+        { title: '10 shoulder rolls', detail: 'Slow backward circles, keeping your shoulders away from your ears.' },
+      ],
+      movesDone: 'Done, next',
+      postureTitle: 'Quick posture check',
+      postureHint: 'As you sit back down:',
+      questions: {
+        chin: { q: 'Is your chin tucked, with your ears over your shoulders?', fix: 'Glide your head back instead of poking your chin toward the screen.' },
+        shoulders: { q: 'Are your shoulders relaxed and down?', fix: 'Let your shoulders drop and rest your forearms on the desk or armrests.' },
+        screen: { q: 'Is the top of your screen at eye level?', fix: 'Raise the screen, or put your laptop on a stand and use an external keyboard, so you look straight ahead.' },
+      } as Record<PostureIssue, { q: string; fix: string }>,
+      yes: 'Yes',
+      notQuite: 'Not quite',
+      finish: 'Log break',
+      skipCheck: 'Skip check and log',
+    },
+    insights: {
+      title: 'Work & breaks',
+      hint: 'Your Work mode sessions over the last 7 days',
+      empty: 'Start a Work mode session on the Ergonomics tab to see your break habits here.',
+      workTime: 'Work time',
+      hours: (h: N) => `${h} h`,
+      workTimeHint: (breaks: N) => `${breaks} ${s(Number(breaks), 'break', 'breaks')} on those days`,
+      perHour: 'Breaks / hour',
+      perHourHint: 'Aim for about 1 an hour',
+      slip: (label: string, count: N, total: N) => `Most common posture slip: ${label} (${count} of ${total} checks).`,
+      slipLabels: { chin: 'chin poking forward', shoulders: 'shoulders creeping up', screen: 'screen too low' } as Record<PostureIssue, string>,
+      painLink: (goal: N, withGoal: N, without: N) => `Mornings after days with ${goal}+ breaks, your pain averaged ${withGoal}/10, compared with ${without}/10 after days with fewer.`,
+      painLinkNote: 'This is a pattern, not proof. Sleep, stress and activity affect pain too.',
+    },
   },
 
   stepper: { decrease: (label: string) => `Decrease ${label}`, increase: (label: string) => `Increase ${label}` },

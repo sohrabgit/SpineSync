@@ -12,6 +12,7 @@ import { CHART } from './chartTheme'
 import { NdiSummary } from './NdiSummary'
 import { PainTrendChart } from './PainTrendChart'
 import { StatTile } from './StatTile'
+import { WorkBreaksCard } from './WorkBreaksCard'
 
 export interface DayPoint {
   day: number
@@ -103,6 +104,8 @@ export function ProgressDashboard() {
         <p className="mb-2 text-xs text-mute">{t.adherenceFormula}</p>
         {points.every((p) => p.adherence === null) ? <EmptyChart text={t.adherenceEmpty} /> : <AdherenceChart data={points} maxDay={maxDay} />}
       </Card>
+
+      <WorkBreaksCard logs={logs} />
 
       <Card>
         <h2 className="text-sm font-semibold text-ink">{t.ndiTitle}</h2>

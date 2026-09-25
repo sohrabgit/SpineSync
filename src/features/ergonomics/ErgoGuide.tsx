@@ -9,6 +9,7 @@ import { cn } from '@/components/ui/cn'
 import { useI18n } from '@/i18n'
 import { BreakCounter } from './BreakCounter'
 import { ErgoCategoryCard } from './ErgoCategoryCard'
+import { WorkModeCard } from './WorkModeCard'
 
 type Filter = 'mine' | 'all'
 
@@ -39,6 +40,7 @@ export function ErgoGuide() {
         </div>
       </Card>
 
+      <WorkModeCard />
       <BreakCounter />
 
       <section>

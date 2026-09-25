@@ -8,12 +8,15 @@ import type {
   ExerciseProgress,
   NdiAnswer,
   PainCheckin,
+  PostureIssue,
   RecoveryData,
+  WorkSession,
 } from '@/types/recovery'
 import { DEFAULT_ACTIVE_CATEGORIES } from '@/data/ergonomics'
 import { buildPlan, decidePlanLevel, mergeProgress, previousVas } from '@/lib/adaptive'
 import { appToday } from '@/lib/date'
 import { dailyCompliance, ndiScore } from '@/lib/metrics'
+import { MINUTE_MS, sessionMinutes } from '@/lib/workMode'
 import { dayFromStart, dueNdiCheckpoint, phaseForDay, PROGRAM_DAYS } from '@/lib/program'
 import { detectLang, type Lang } from '@/i18n/format'
 
@@ -24,10 +27,16 @@ export interface Preferences {
   /** Demo clock: shifts "today" forward to preview program progression. */
   clock_offset_days: number
   language: Lang
+  /** Last break interval picked when starting Work mode. */
+  break_interval_min: WorkSession['interval_min']
+  /** Last eye-nudge choice when starting Work mode. */
+  eye_nudges: boolean
 }
 
 export interface RecoveryState extends RecoveryData {
   preferences: Preferences
+  /** The active Work mode session, if any. */
+  work_session: WorkSession | null
 }
 
 interface RecoveryActions {
@@ -36,6 +45,14 @@ interface RecoveryActions {
   updateExercise: (id: ExerciseId, update: (p: ExerciseProgress) => ExerciseProgress) => void
   toggleErgoTask: (taskId: string) => void
   setBreaks: (count: number) => void
+  startWork: (interval: WorkSession['interval_min'], eyeNudges: boolean) => void
+  endWork: () => void
+  /** Log one movement break (and restart the Work mode timer, if a session is running). */
+  takeBreak: () => void
+  snoozeBreak: (minutes: number) => void
+  /** Record the start of a 20-20-20 eye nudge. */
+  markEyeNudge: (at: number) => void
+  logPostureCheck: (issues: PostureIssue[]) => void
   toggleErgoCategory: (id: ErgoCategoryId) => void
   saveNdi: (answers: NdiAnswer[]) => void
   setSoundEnabled: (on: boolean) => void
@@ -73,13 +90,23 @@ function initialState(language: Lang = detectLang()): RecoveryState {
     history: [],
     program: { start_date: date, duration_days: PROGRAM_DAYS, onboarded: false, active_ergo_categories: DEFAULT_ACTIVE_CATEGORIES },
     ndi_assessments: [],
-    preferences: { sound_enabled: true, clock_offset_days: 0, language },
+    preferences: { ...DEFAULT_PREFERENCES, language },
+    work_session: null,
   }
 }
+
+const DEFAULT_PREFERENCES: Omit<Preferences, 'language'> = { sound_enabled: true, clock_offset_days: 0, break_interval_min: 45, eye_nudges: false }
+
+const clampBreaks = (count: number) => Math.max(0, Math.min(24, count))
+
+/** Credit a session's minutes to a log. */
+const withWorkMinutes = (log: DailyLog, session: WorkSession | null, now: number): DailyLog =>
+  session ? { ...log, work_minutes: (log.work_minutes ?? 0) + sessionMinutes(session, now) } : log
 
 const hasActivity = (log: DailyLog) =>
   log.pain_checkin !== null ||
   log.exercises_completed.some((e) => e.status !== 'pending') ||
+  (log.work_minutes ?? 0) > 0 ||
   Object.entries(log.ergonomics_checklist).some(([k, v]) => (k === 'hourly_breaks_count' ? Number(v) > 0 : v === true))
 
 /** Apply an update to today's log and recompute its compliance. */
@@ -95,10 +122,13 @@ function rollover(s: RecoveryState): Partial<RecoveryState> | null {
   if (s.daily_log.date === date) {
     return s.current_day === day && s.phase === phase ? null : { current_day: day, phase, daily_log: { ...s.daily_log, day } }
   }
-  const history = hasActivity(s.daily_log) ? [...s.history.filter((l) => l.date !== s.daily_log.date), s.daily_log] : s.history
+  // A session still running on a new day is ended and credited to the day it belonged to.
+  const outgoing = withWorkMinutes(s.daily_log, s.work_session, Date.now())
+  const history = hasActivity(outgoing) ? [...s.history.filter((l) => l.date !== outgoing.date), outgoing] : s.history
   const fresh = createEmptyLog(date, day)
   return {
     history,
+    work_session: null,
     current_day: day,
     phase,
     daily_log: { ...fresh, daily_compliance_percentage: dailyCompliance(fresh, s.program.active_ergo_categories) },
@@ -122,6 +152,18 @@ function migrateEffortNotes<T extends RecoveryData>(data: T): T {
     }),
   })
   return { ...data, daily_log: fixLog(data.daily_log), history: data.history.map(fixLog) }
+}
+
+/** Upgrade persisted state from an older store version. */
+export function migratePersisted(persisted: unknown, version: number): RecoveryState {
+  let s = persisted as RecoveryState
+  if (version < 2) {
+    s = { ...migrateEffortNotes(s), preferences: { ...s.preferences, language: detectLang() } }
+  }
+  if (version < 3) {
+    s = { ...s, preferences: { ...DEFAULT_PREFERENCES, ...s.preferences }, work_session: null }
+  }
+  return s
 }
 
 function isRecoveryData(x: unknown): x is RecoveryData {
@@ -179,8 +221,46 @@ export const useRecoveryStore = create<RecoveryStore>()(
         set((s) =>
           withLog(s, (l) => ({
             ...l,
-            ergonomics_checklist: { ...l.ergonomics_checklist, hourly_breaks_count: Math.max(0, Math.min(24, count)) },
+            ergonomics_checklist: { ...l.ergonomics_checklist, hourly_breaks_count: clampBreaks(count) },
           })),
+        ),
+
+      startWork: (interval, eyeNudges) => {
+        const now = Date.now()
+        set((s) => ({
+          work_session: { started_at: now, interval_min: interval, eye_nudges: eyeNudges, last_break_at: now, snoozed_until: null, breaks: 0, last_eye_at: null },
+          preferences: { ...s.preferences, break_interval_min: interval, eye_nudges: eyeNudges },
+        }))
+      },
+
+      endWork: () =>
+        set((s) => (s.work_session ? { work_session: null, ...withLog(s, (l) => withWorkMinutes(l, s.work_session, Date.now())) } : {})),
+
+      takeBreak: () =>
+        set((s) => {
+          const ws = s.work_session
+          return {
+            work_session: ws && { ...ws, last_break_at: Date.now(), snoozed_until: null, breaks: ws.breaks + 1 },
+            ...withLog(s, (l) => ({
+              ...l,
+              ergonomics_checklist: { ...l.ergonomics_checklist, hourly_breaks_count: clampBreaks(l.ergonomics_checklist.hourly_breaks_count + 1) },
+            })),
+          }
+        }),
+
+      snoozeBreak: (minutes) =>
+        set((s) => (s.work_session ? { work_session: { ...s.work_session, snoozed_until: Date.now() + minutes * MINUTE_MS } } : {})),
+
+      markEyeNudge: (at) => set((s) => (s.work_session ? { work_session: { ...s.work_session, last_eye_at: at } } : {})),
+
+      logPostureCheck: (issues) =>
+        set((s) =>
+          withLog(s, (l) => {
+            const prev = l.posture_checks ?? { total: 0, issues: { chin: 0, shoulders: 0, screen: 0 } }
+            const next = { ...prev.issues }
+            for (const i of issues) next[i] += 1
+            return { ...l, posture_checks: { total: prev.total + 1, issues: next } }
+          }),
         ),
 
       toggleErgoCategory: (id) =>
@@ -229,24 +309,19 @@ export const useRecoveryStore = create<RecoveryStore>()(
         set((s) => ({
           ...migrateEffortNotes(data),
           preferences: {
-            sound_enabled: prefs?.sound_enabled ?? true,
-            clock_offset_days: prefs?.clock_offset_days ?? 0,
+            ...DEFAULT_PREFERENCES,
+            ...prefs,
             language: s.preferences.language,
           },
+          work_session: null,
         }))
         get().syncDay()
       },
     }),
     {
       name: STORAGE_KEY,
-      version: 2,
-      migrate: (persisted, version) => {
-        const s = persisted as RecoveryState
-        if (version < 2) {
-          return { ...migrateEffortNotes(s), preferences: { ...s.preferences, language: detectLang() } }
-        }
-        return s
-      },
+      version: 3,
+      migrate: migratePersisted,
       storage: createJSONStorage(() => localStorage),
       partialize: (s): RecoveryState => ({
         user_id: s.user_id,
@@ -257,6 +332,7 @@ export const useRecoveryStore = create<RecoveryStore>()(
         program: s.program,
         ndi_assessments: s.ndi_assessments,
         preferences: s.preferences,
+        work_session: s.work_session,
       }),
     },
   ),
@@ -264,6 +340,6 @@ export const useRecoveryStore = create<RecoveryStore>()(
 
 /** Snapshot of persisted data only (for export and the coach). */
 export function selectData(s: RecoveryStore): RecoveryState {
-  const { user_id, current_day, phase, daily_log, history, program, ndi_assessments, preferences } = s
-  return { user_id, current_day, phase, daily_log, history, program, ndi_assessments, preferences }
+  const { user_id, current_day, phase, daily_log, history, program, ndi_assessments, preferences, work_session } = s
+  return { user_id, current_day, phase, daily_log, history, program, ndi_assessments, preferences, work_session }
 }

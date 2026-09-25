@@ -119,6 +119,34 @@ export type ErgonomicsChecklist = {
   sleeping_position_adhered: boolean
 } & { [taskId: string]: boolean | number }
 
+// ─── Work mode ──────────────────────────────────────────────────────────────
+
+export type BreakInterval = 1 | 30 | 45 | 60
+
+/** An active desk-work session. All timestamps are epoch milliseconds. */
+export interface WorkSession {
+  started_at: number
+  /** Minutes between movement breaks (1 is a dev-only testing interval). */
+  interval_min: BreakInterval
+  /** 20-20-20 eye nudges between movement breaks. */
+  eye_nudges: boolean
+  /** Session start, or the most recent break. */
+  last_break_at: number
+  snoozed_until: number | null
+  /** Movement breaks taken during this session. */
+  breaks: number
+  /** When the latest 20-20-20 eye nudge started. */
+  last_eye_at: number | null
+}
+
+export type PostureIssue = 'chin' | 'shoulders' | 'screen'
+
+export interface PostureChecks {
+  total: number
+  /** How many checks flagged each issue. */
+  issues: Record<PostureIssue, number>
+}
+
 // ─── Daily log ──────────────────────────────────────────────────────────────
 
 export interface DailyLog {
@@ -132,6 +160,10 @@ export interface DailyLog {
   exercises_completed: ExerciseProgress[]
   ergonomics_checklist: ErgonomicsChecklist
   daily_compliance_percentage: number
+  /** Additive: minutes spent in Work mode sessions. */
+  work_minutes?: number
+  /** Additive: posture self-checks answered at the end of breaks. */
+  posture_checks?: PostureChecks
 }
 
 // ─── NDI ────────────────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { checkinStreak, dailyCompliance, ndiBand, ndiScore, painDelta, scheduledErgoTasks } from './metrics'
+import { breakPainLink, checkinStreak, dailyCompliance, ndiBand, ndiScore, painDelta, postureSlip, scheduledErgoTasks, workBreakStats } from './metrics'
 import { completeSet, logRep, markComplete } from './exerciseProgress'
 import { buildPlan, toProgress } from './adaptive'
 import { makeLog } from './testUtils'
@@ -74,5 +74,50 @@ describe('checkinStreak', () => {
     const logs = [makeLog(1, 3), makeLog(2, 3), makeLog(3, 3), makeLog(5, 2)]
     expect(checkinStreak(logs, 5)).toBe(1)
     expect(checkinStreak(logs, 4)).toBe(3)
+  })
+})
+
+const withBreaks = (day: number, vas: number | null, breaks: number, extra = {}) =>
+  makeLog(day, vas, { ergonomics_checklist: { monitor_height_checked: false, hourly_breaks_count: breaks, sleeping_position_adhered: false }, ...extra })
+
+describe('workBreakStats', () => {
+  it('is null without Work mode time', () => {
+    expect(workBreakStats([withBreaks(1, 3, 4)])).toBeNull()
+  })
+  it('computes breaks per work hour on days with Work mode time', () => {
+    const logs = [withBreaks(1, 3, 4, { work_minutes: 240 }), withBreaks(2, 3, 2, { work_minutes: 120 }), withBreaks(3, 3, 5)]
+    expect(workBreakStats(logs)).toEqual({ hours: 6, breaks: 6, perHour: 1 })
+  })
+})
+
+describe('postureSlip', () => {
+  it('returns the most flagged issue', () => {
+    const logs = [
+      makeLog(1, null, { posture_checks: { total: 3, issues: { chin: 1, shoulders: 0, screen: 2 } } }),
+      makeLog(2, null, { posture_checks: { total: 2, issues: { chin: 1, shoulders: 0, screen: 1 } } }),
+    ]
+    expect(postureSlip(logs)).toEqual({ issue: 'screen', count: 3, total: 5 })
+  })
+  it('is null when nothing was flagged', () => {
+    expect(postureSlip([makeLog(1, null, { posture_checks: { total: 2, issues: { chin: 0, shoulders: 0, screen: 0 } } })])).toBeNull()
+  })
+})
+
+describe('breakPainLink', () => {
+  it('compares next-morning pain after days that met the break goal vs not', () => {
+    // Days 1–3 meet the goal (next mornings: 2, 2, 2); days 4–6 miss it (next mornings: 5, 5, 5).
+    const logs = [
+      withBreaks(1, 4, 3),
+      withBreaks(2, 2, 4),
+      withBreaks(3, 2, 5),
+      withBreaks(4, 2, 0),
+      withBreaks(5, 5, 1),
+      withBreaks(6, 5, 2),
+      withBreaks(7, 5, 0),
+    ]
+    expect(breakPainLink(logs)).toEqual({ withGoal: 2, withoutGoal: 5 })
+  })
+  it('needs at least 3 days in each group', () => {
+    expect(breakPainLink([withBreaks(1, 4, 3), withBreaks(2, 2, 0), withBreaks(3, 5, 0)])).toBeNull()
   })
 })

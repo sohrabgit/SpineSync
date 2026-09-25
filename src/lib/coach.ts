@@ -1,8 +1,9 @@
-import type { RecoveryData } from '@/types/recovery'
+import type { RecoveryData, WorkSession } from '@/types/recovery'
 import type { Messages } from '@/i18n/en'
 import { BREAK_GOAL } from '@/data/ergonomics'
 import { PHASES, PROGRAM_DAYS } from './program'
 import { averageAdherence, checkedInLogs, ndiBand, painDelta, type Tone } from './metrics'
+import { MINUTE_MS, msUntilBreak, OVERDUE_NUDGE_MS } from './workMode'
 
 export interface Insight {
   id: string
@@ -18,7 +19,7 @@ const NDI_MEANINGFUL_CHANGE = 7.5
  * Local, rule-based recovery coach. Deterministic and offline — no API calls, no cost.
  * Returns insights ordered by priority: safety → today → trends → adherence → milestones.
  */
-export function getInsights(data: RecoveryData, m: Messages, now: Date = new Date(), limit = 4): Insight[] {
+export function getInsights(data: RecoveryData & { work_session?: WorkSession | null }, m: Messages, now: Date = new Date(), limit = 4): Insight[] {
   const c = m.coach
   const out: Insight[] = []
   const today = data.daily_log
@@ -78,8 +79,14 @@ export function getInsights(data: RecoveryData, m: Messages, now: Date = new Dat
     else if (recentAdherence < 50) out.push({ id: 'adherence-low', tone: 'info', ...c.adherenceLow })
   }
 
-  // Breaks nudge in the afternoon
-  if (checkin && now.getHours() >= 15 && today.ergonomics_checklist.hourly_breaks_count < BREAK_GOAL) {
+  // Breaks: an overdue Work mode break, otherwise a nudge in the afternoon
+  const session = data.work_session
+  if (session) {
+    if (-msUntilBreak(session, now.getTime()) >= OVERDUE_NUDGE_MS) {
+      const sitting = Math.floor((now.getTime() - session.last_break_at) / MINUTE_MS)
+      out.push({ id: 'sitting', tone: 'info', title: c.sitting.title(sitting), body: c.sitting.body })
+    }
+  } else if (checkin && now.getHours() >= 15 && today.ergonomics_checklist.hourly_breaks_count < BREAK_GOAL) {
     out.push({ id: 'breaks', tone: 'info', title: c.breaks.title, body: c.breaks.body(today.ergonomics_checklist.hourly_breaks_count, BREAK_GOAL) })
   }
 
