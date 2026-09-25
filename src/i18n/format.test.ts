@@ -11,6 +11,10 @@ describe('localizeDigits', () => {
     expect(localizeDigits('12.5%', 'fa')).toBe('۱۲٫۵٪')
     expect(localizeDigits('07:30', 'fa')).toBe('۰۷:۳۰')
   })
+  it('uses a French decimal comma and spaced percent sign', () => {
+    expect(localizeDigits('12.5%', 'fr')).toBe('12,5\u202f%')
+    expect(localizeDigits('07:30', 'fr')).toBe('07:30')
+  })
 })
 
 describe('Persian messages', () => {

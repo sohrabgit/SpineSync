@@ -2,11 +2,12 @@ import { useEffect } from 'react'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { en, type Messages } from './en'
 import { fa } from './fa'
+import { fr } from './fr'
 import { LANGS, localizeDigits, type Lang } from './format'
 
 export { LANGS, type Lang, type Messages }
 
-export const MESSAGES: Record<Lang, Messages> = { en, fa }
+export const MESSAGES: Record<Lang, Messages> = { en, fr, fa }
 
 export interface I18n {
   lang: Lang
