@@ -98,7 +98,7 @@ export type ErgoCategoryId =
   | 'childcare'
   | 'sleep'
   | 'shopping'
-  | 'intimacy'
+  | 'cycling'
   | 'devices'
 
 /** Task ids double as `ergonomics_checklist` keys; labels live in the i18n messages. */

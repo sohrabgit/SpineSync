@@ -180,7 +180,7 @@ export const en = {
     travel: { name: 'Travel', blurb: 'Neck pillow and movement breaks on long journeys.' },
     childcare: { name: 'Childcare & Parenting', blurb: 'Lift with the legs, keep little ones close.' },
     shopping: { name: 'Shopping & Chores', blurb: 'Balance the load — max 3 kg per hand.' },
-    intimacy: { name: 'Sexual Health', blurb: 'Neutral neck positions, no weight through the arms or neck.' },
+    cycling: { name: 'Cycling', blurb: 'Ride upright — never with your head tilted back to see the road.' },
   } as Record<ErgoCategoryId, { name: string; blurb: string }>,
 
   ergoTasks: {
@@ -210,7 +210,9 @@ export const en = {
     loads_balanced: { label: 'Loads split evenly (≤3 kg per side)' },
     backpack_used: { label: 'Used an ergonomic backpack for heavier loads' },
     chores_no_overhead: { label: 'Avoided prolonged overhead reaching' },
-    neutral_intimacy_position: { label: 'Chose a supported, neutral-neck position', detail: 'e.g. lying on your back with a neck pillow.' },
+    handlebars_raised: { label: 'Handlebars raised so you ride upright', detail: 'An upright or hybrid position — avoid a low road-bike posture.' },
+    chin_tuck_at_stops: { label: 'Did chin tucks at stops' },
+    smooth_short_rides: { label: 'Kept rides short on smooth roads' },
   } as Record<string, { label: string; detail?: string }>,
 
   redFlags: {

@@ -17,7 +17,7 @@ export const ERGO_CATEGORIES: ErgoCategory[] = [
   { id: 'travel', core: false, tasks: [{ id: 'u_pillow_used' }, { id: 'travel_walk_breaks' }, { id: 'luggage_rolled_beside' }] },
   { id: 'childcare', core: false, tasks: [{ id: 'child_held_close' }, { id: 'squat_to_lift_child' }, { id: 'feeding_pillow_used' }] },
   { id: 'shopping', core: false, tasks: [{ id: 'loads_balanced' }, { id: 'backpack_used' }, { id: 'chores_no_overhead' }] },
-  { id: 'intimacy', core: false, tasks: [{ id: 'neutral_intimacy_position' }] },
+  { id: 'cycling', core: false, tasks: [{ id: 'handlebars_raised' }, { id: 'chin_tuck_at_stops' }, { id: 'smooth_short_rides' }] },
 ]
 
 export const DEFAULT_ACTIVE_CATEGORIES: ErgoCategoryId[] = ERGO_CATEGORIES.filter((c) => c.core).map((c) => c.id)

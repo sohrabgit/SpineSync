@@ -180,7 +180,7 @@ export const fr: Messages = {
     travel: { name: 'Voyages', blurb: 'Coussin de nuque et pauses de marche sur les longs trajets.' },
     childcare: { name: 'Enfants', blurb: 'Soulevez avec les jambes, gardez les petits près de vous.' },
     shopping: { name: 'Courses et tâches ménagères', blurb: `Répartissez la charge${NB}: 3 kg max par main.` },
-    intimacy: { name: 'Vie intime', blurb: 'Positions neutres pour le cou, sans appui sur les bras ni la nuque.' },
+    cycling: { name: 'Vélo', blurb: 'Roulez en position droite, jamais la tête basculée en arrière pour voir la route.' },
   },
 
   ergoTasks: {
@@ -210,7 +210,9 @@ export const fr: Messages = {
     loads_balanced: { label: 'Charges réparties (3 kg max par côté)' },
     backpack_used: { label: 'Sac à dos ergonomique pour les charges lourdes' },
     chores_no_overhead: { label: 'Évité de travailler longtemps les bras au-dessus de la tête' },
-    neutral_intimacy_position: { label: 'Position soutenue, cou neutre', detail: 'Par exemple sur le dos avec un coussin sous la nuque.' },
+    handlebars_raised: { label: 'Guidon relevé pour rouler droit', detail: 'Position droite ou hybride — évitez la posture basse du vélo de route.' },
+    chin_tuck_at_stops: { label: 'Rentrées du menton à chaque arrêt' },
+    smooth_short_rides: { label: 'Trajets courts sur routes lisses' },
   },
 
   redFlags: {

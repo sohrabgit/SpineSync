@@ -1,4 +1,4 @@
-import { Baby, BedDouble, Car, CookingPot, Heart, Monitor, Plane, ShoppingBag, ShowerHead, Smartphone, type LucideIcon } from 'lucide-react'
+import { Baby, BedDouble, Bike, Car, CookingPot, Monitor, Plane, ShoppingBag, ShowerHead, Smartphone, type LucideIcon } from 'lucide-react'
 import type { ErgoCategoryId } from '@/types/recovery'
 
 export const CATEGORY_ICONS: Record<ErgoCategoryId, LucideIcon> = {
@@ -11,5 +11,5 @@ export const CATEGORY_ICONS: Record<ErgoCategoryId, LucideIcon> = {
   travel: Plane,
   childcare: Baby,
   shopping: ShoppingBag,
-  intimacy: Heart,
+  cycling: Bike,
 }
