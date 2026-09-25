@@ -1,0 +1,12 @@
+{
+  "name": "SpineSync — Cervical Recovery",
+  "short_name": "SpineSync",
+  "description": "30-day cervical disc recovery and ergonomics companion.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f766e",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
