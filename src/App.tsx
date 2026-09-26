@@ -1,7 +1,8 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { useDayRollover } from '@/hooks/useDayRollover'
 import { useDocumentLang, useI18n } from '@/i18n'
+import { hideSplash } from '@/lib/splash'
 import { AppShell } from '@/components/layout/AppShell'
 import type { TabId } from '@/components/layout/tabs'
 import { Onboarding } from '@/features/onboarding/Onboarding'
@@ -18,6 +19,9 @@ export default function App() {
   const { m } = useI18n()
   const onboarded = useRecoveryStore((s) => s.program.onboarded)
   const [tab, setTab] = useState<TabId>('today')
+
+  // The first real screen is mounted — let the launch splash fade out.
+  useEffect(() => hideSplash(), [])
 
   if (!onboarded) return <Onboarding />
 

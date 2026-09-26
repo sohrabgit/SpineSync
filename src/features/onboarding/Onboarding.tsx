@@ -1,24 +1,44 @@
 import { useState } from 'react'
-import { ArrowRight, Check, HeartPulse, ShieldAlert, ShieldCheck, Sparkles, Stethoscope } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, HeartPulse, ShieldAlert, ShieldCheck, Sparkles, Stethoscope } from 'lucide-react'
 import type { ErgoCategoryId } from '@/types/recovery'
 import { RED_FLAGS } from '@/data/redFlags'
 import { DEFAULT_ACTIVE_CATEGORIES, ERGO_CATEGORIES } from '@/data/ergonomics'
 import { addDays, appToday } from '@/lib/date'
-import { PHASES } from '@/lib/program'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/components/ui/cn'
-import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 import { useI18n } from '@/i18n'
 import { CATEGORY_ICONS } from '@/features/ergonomics/categoryIcons'
+import { IntroSlides } from './IntroSlides'
 
-type Step = 'welcome' | 'safety' | 'blocked' | 'setup'
+type Step = 'intro' | 'safety' | 'blocked' | 'setup'
+
+/** Back button plus a two-segment progress bar for the steps after the intro. */
+function StepHeader({ step, onBack, backLabel }: { step: 1 | 2; onBack: () => void; backLabel: string }) {
+  return (
+    <div className="mb-6 flex h-10 items-center gap-4">
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label={backLabel}
+        className="-ms-2 grid size-10 place-items-center rounded-full text-mute transition hover:bg-panel-2 hover:text-ink"
+      >
+        <ArrowLeft className="size-5 rtl:-scale-x-100" />
+      </button>
+      <div className="flex flex-1 gap-1.5" aria-hidden>
+        {[1, 2].map((i) => (
+          <span key={i} className={cn('h-1 flex-1 rounded-full transition-colors duration-500', i <= step ? 'bg-brand' : 'bg-line')} />
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export function Onboarding() {
   const completeOnboarding = useRecoveryStore((s) => s.completeOnboarding)
-  const { m, n } = useI18n()
+  const { m } = useI18n()
   const t = m.onboarding
-  const [step, setStep] = useState<Step>('welcome')
+  const [step, setStep] = useState<Step>('intro')
   const [acknowledged, setAcknowledged] = useState(false)
   const today = appToday()
   const [startDate, setStartDate] = useState(today)
@@ -30,45 +50,11 @@ export function Onboarding() {
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-bg px-5 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div key={step} className="flex flex-1 animate-fade-in flex-col">
-        {step === 'welcome' && (
-          <>
-            <div className="flex items-center gap-3">
-              <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="size-12 rounded-2xl" />
-              <div className="min-w-0 flex-1">
-                <p className="text-xl font-bold tracking-tight text-ink">SpineSync</p>
-                <p className="text-sm text-mute">{t.tagline}</p>
-              </div>
-            </div>
-            <LanguageSwitcher className="mt-6" />
-            <h1 className="mt-8 text-3xl leading-tight font-bold tracking-tight text-ink">
-              {t.heroA}
-              <br />
-              <span className="text-brand">{t.heroB}</span>
-            </h1>
-            <p className="mt-3 text-mute">{t.intro}</p>
-            <ol className="mt-8 space-y-3">
-              {Object.values(PHASES).map((p) => (
-                <li key={p.phase} className="flex items-start gap-3 rounded-2xl border border-line/60 bg-panel p-3">
-                  <span className="knob grid size-8 shrink-0 place-items-center bg-brand text-sm font-bold text-bg">{n(p.phase)}</span>
-                  <div>
-                    <p className="text-sm font-semibold text-ink">
-                      {m.phases[p.phase].name} <span className="font-normal text-mute">· {t.days(p.startDay, p.endDay)}</span>
-                    </p>
-                    <p className="text-xs text-mute">{m.phases[p.phase].focus}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-            <div className="mt-auto pt-8">
-              <Button className="w-full" onClick={() => setStep('safety')}>
-                {t.getStarted} <ArrowRight className="size-4 rtl:-scale-x-100" />
-              </Button>
-            </div>
-          </>
-        )}
+        {step === 'intro' && <IntroSlides onDone={() => setStep('safety')} />}
 
         {step === 'safety' && (
           <>
+            <StepHeader step={1} onBack={() => setStep('intro')} backLabel={m.common.back} />
             <div className="knob grid size-12 place-items-center bg-danger text-bg">
               <ShieldAlert className="size-6" strokeWidth={2.2} />
             </div>
@@ -120,6 +106,7 @@ export function Onboarding() {
 
         {step === 'setup' && (
           <>
+            <StepHeader step={2} onBack={() => setStep('safety')} backLabel={m.common.back} />
             <div className="knob grid size-12 place-items-center bg-brand text-bg">
               <Sparkles className="size-6" strokeWidth={2.2} />
             </div>
