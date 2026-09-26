@@ -10,10 +10,12 @@ interface SheetProps {
   subtitle?: ReactNode
   children: ReactNode
   footer?: ReactNode
+  /** Changing this swaps the body in place (scroll resets) without replaying the sheet's entrance. */
+  bodyKey?: string
 }
 
 /** Mobile bottom sheet (centred dialog column on wider screens). */
-export function Sheet({ open, onClose, title, subtitle, children, footer }: SheetProps) {
+export function Sheet({ open, onClose, title, subtitle, children, footer, bodyKey }: SheetProps) {
   const titleId = useId()
   const { m } = useI18n()
   useEffect(() => {
@@ -50,7 +52,9 @@ export function Sheet({ open, onClose, title, subtitle, children, footer }: Shee
             <X className="size-5" />
           </button>
         </header>
-        <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-4">{children}</div>
+        <div key={bodyKey} className="flex-1 animate-fade-in overflow-y-auto overscroll-contain px-5 pb-4">
+          {children}
+        </div>
         {footer && <footer className="border-t border-line px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">{footer}</footer>}
       </div>
     </div>,

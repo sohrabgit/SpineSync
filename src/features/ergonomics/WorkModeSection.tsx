@@ -7,7 +7,6 @@ import { useNow } from '@/hooks/useNow'
 import { requestNotifications } from '@/hooks/useWorkModeAlerts'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { Toggle } from '@/components/ui/Toggle'
 import { cn } from '@/components/ui/cn'
@@ -19,7 +18,8 @@ const INTERVALS: BreakInterval[] = import.meta.env.DEV ? [1, 30, 45, 60] : [30, 
 
 const INFO = '#7fa9f5'
 
-export function WorkModeCard() {
+/** Work mode controls, rendered inside the Movement breaks card (no card chrome of its own). */
+export function WorkModeSection() {
   const session = useRecoveryStore((s) => s.work_session)
   return session ? <ActiveSession session={session} /> : <StartSession />
 }
@@ -39,7 +39,7 @@ function StartSession() {
   }
 
   return (
-    <Card>
+    <div>
       <div className="flex items-start gap-3">
         <span className="knob grid size-10 shrink-0 place-items-center bg-info text-bg">
           <Laptop className="size-5" strokeWidth={2.2} aria-hidden />
@@ -83,7 +83,7 @@ function StartSession() {
         {t.start}
       </Button>
       <p className="mt-2 text-[11px] text-dim">{t.caveat}</p>
-    </Card>
+    </div>
   )
 }
 
@@ -102,7 +102,7 @@ function ActiveSession({ session }: { session: WorkSession }) {
   const eyeLeft = eyeNudgeLeft(session, now)
 
   return (
-    <Card className={cn('transition-colors', due && 'border-info/60')}>
+    <div>
       <div className="flex items-center gap-4">
         <ProgressRing value={due ? 1 : left / (session.interval_min * MINUTE_MS)} size={88} stroke={7} color={due ? INFO : undefined} instant label={t.countdownAria(clock)}>
           <span className={cn('text-base font-bold tabular-nums', due ? 'text-info' : 'text-ink')}>{due ? `+${clock}` : clock}</span>
@@ -138,6 +138,6 @@ function ActiveSession({ session }: { session: WorkSession }) {
           <Square className="size-4" aria-hidden />
         </Button>
       </div>
-    </Card>
+    </div>
   )
 }

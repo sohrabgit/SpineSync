@@ -42,14 +42,17 @@ export function ExerciseCard({ progress, onOpen, onToggleComplete }: Props) {
             {formatDose(progress, m)}
             {progress.effort_note ? ` · ${m.effort[progress.effort_note]}` : ''}
           </span>
-          <span className="mt-1 flex items-center gap-2">
-            <Badge tone={STATUS_TONE[progress.status]}>{t.status[progress.status]}</Badge>
-            {progress.status === 'in_progress' && (
-              <span className="text-[11px] text-mute tabular-nums">
-                {t.setOf(Math.min(progress.sets_done + 1, progress.target_sets), progress.target_sets)}
-              </span>
-            )}
-          </span>
+          {/* "To do" is implied by the empty check circle; only call out states worth noticing. */}
+          {(progress.status === 'in_progress' || progress.status === 'skipped') && (
+            <span className="mt-1 flex items-center gap-2">
+              <Badge tone={STATUS_TONE[progress.status]}>{t.status[progress.status]}</Badge>
+              {progress.status === 'in_progress' && (
+                <span className="text-[11px] text-mute tabular-nums">
+                  {t.setOf(Math.min(progress.sets_done + 1, progress.target_sets), progress.target_sets)}
+                </span>
+              )}
+            </span>
+          )}
         </span>
       </button>
       <button

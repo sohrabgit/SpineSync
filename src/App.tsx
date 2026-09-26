@@ -28,7 +28,7 @@ export default function App() {
   return (
     <AppShell tab={tab} onTabChange={setTab}>
       {tab === 'today' && <TodayView onNavigate={setTab} />}
-      {tab === 'exercises' && <ExerciseTracker onNavigate={setTab} />}
+      {tab === 'exercises' && <ExerciseTracker />}
       {tab === 'ergonomics' && <ErgoGuide />}
       {tab === 'progress' && (
         <Suspense fallback={<div className="grid h-64 place-items-center text-sm text-dim">{m.progress.loading}</div>}>

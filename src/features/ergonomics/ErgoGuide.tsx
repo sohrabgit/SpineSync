@@ -1,15 +1,13 @@
 import { useState } from 'react'
 import type { ErgoCategoryId } from '@/types/recovery'
-import { ERGO_CATEGORIES } from '@/data/ergonomics'
+import { BREAKS_TASK_ID, ERGO_CATEGORIES } from '@/data/ergonomics'
 import { isErgoTaskDone, scheduledErgoTasks } from '@/lib/metrics'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
-import { Card, SectionTitle } from '@/components/ui/Card'
-import { ProgressRing } from '@/components/ui/ProgressRing'
+import { SectionTitle } from '@/components/ui/Card'
 import { cn } from '@/components/ui/cn'
 import { useI18n } from '@/i18n'
-import { BreakCounter } from './BreakCounter'
 import { ErgoCategoryCard } from './ErgoCategoryCard'
-import { WorkModeCard } from './WorkModeCard'
+import { MovementCard } from './MovementCard'
 
 type Filter = 'mine' | 'all'
 
@@ -18,34 +16,24 @@ export function ErgoGuide() {
   const activeCats = useRecoveryStore((s) => s.program.active_ergo_categories)
   const [filter, setFilter] = useState<Filter>('mine')
   const [expanded, setExpanded] = useState<ErgoCategoryId | null>('desk')
-  const { m, n } = useI18n()
+  const { m } = useI18n()
   const t = m.ergoUi
 
   const isActive = (id: ErgoCategoryId) => ERGO_CATEGORIES.find((c) => c.id === id)?.core || activeCats.includes(id)
-  const scheduled = scheduledErgoTasks(activeCats)
-  const done = scheduled.filter((id) => isErgoTaskDone(checklist, id)).length
+  // Breaks have their own card above, so the habit count leaves them out.
+  const habits = scheduledErgoTasks(activeCats).filter((id) => id !== BREAKS_TASK_ID)
+  const done = habits.filter((id) => isErgoTaskDone(checklist, id)).length
   const categories = filter === 'mine' ? ERGO_CATEGORIES.filter((c) => isActive(c.id)) : ERGO_CATEGORIES
 
   return (
     <div className="space-y-5">
-      <Card className="flex items-center gap-4">
-        <ProgressRing value={scheduled.length ? done / scheduled.length : 0} size={60} stroke={6} label={t.tasksDone(done, scheduled.length)}>
-          <span className="text-sm font-bold text-ink tabular-nums">
-            {n(done)}/{n(scheduled.length)}
-          </span>
-        </ProgressRing>
-        <div>
-          <h1 className="text-lg font-bold tracking-tight text-ink">{t.title}</h1>
-          <p className="text-xs text-mute">{t.intro}</p>
-        </div>
-      </Card>
+      <p className="px-1 text-sm text-mute">{t.intro}</p>
 
-      <WorkModeCard />
-      <BreakCounter />
+      <MovementCard />
 
       <section>
         <SectionTitle
-          title={t.activities}
+          title={t.habitsTitle(done, habits.length)}
           action={
             <div className="flex overflow-hidden rounded-xl border border-line text-[11px] font-bold tracking-[0.06em] uppercase" role="tablist" aria-label={t.filter}>
               {(['mine', 'all'] as const).map((f) => (

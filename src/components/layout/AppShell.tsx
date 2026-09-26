@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { SettingsSheet } from '@/features/settings/SettingsSheet'
 import { BreakSheet } from '@/features/ergonomics/BreakSheet'
+import { ExerciseSession } from '@/features/exercises/ExerciseSession'
 import { useWorkModeAlerts } from '@/hooks/useWorkModeAlerts'
 import { BottomNav } from './BottomNav'
 import { Header } from './Header'
@@ -21,8 +22,8 @@ export function AppShell({ tab, onTabChange, children }: { tab: TabId; onTabChan
 
   return (
     <div className="relative mx-auto min-h-dvh max-w-md bg-bg sm:border-x sm:border-line/60">
-      <Header onOpenSettings={() => setSettingsOpen(true)} />
-      <StatusBanner />
+      <Header tab={tab} onOpenSettings={() => setSettingsOpen(true)} />
+      <StatusBanner onToday={tab === 'today'} />
       <WorkModeBar hidden={tab === 'ergonomics'} />
       <main key={tab} className="animate-fade-in px-4 pt-4 pb-[calc(7rem+env(safe-area-inset-bottom))]">
         {children}
@@ -30,6 +31,7 @@ export function AppShell({ tab, onTabChange, children }: { tab: TabId; onTabChan
       <BottomNav active={tab} onChange={onTabChange} badges={{ exercises: remaining }} />
       <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <BreakSheet />
+      <ExerciseSession />
     </div>
   )
 }

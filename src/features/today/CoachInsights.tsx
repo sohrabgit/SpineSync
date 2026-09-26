@@ -10,10 +10,11 @@ import { useI18n } from '@/i18n'
 
 const ICONS: Record<Tone, LucideIcon> = { positive: CircleCheckBig, info: Info, warning: TriangleAlert, critical: ShieldAlert }
 
-export function CoachInsights() {
+/** `hide` drops insights the surrounding screen already covers (e.g. Today's plan asks for the check-in itself). */
+export function CoachInsights({ hide = [] }: { hide?: string[] }) {
   const data = useRecoveryStore(useShallow(selectData))
   const { m } = useI18n()
-  const insights = getInsights(data, m)
+  const insights = getInsights(data, m).filter((i) => !hide.includes(i.id))
   if (insights.length === 0) return null
 
   return (

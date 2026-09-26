@@ -17,7 +17,7 @@ export const fa: Messages = {
     language: 'زبان',
   },
 
-  tabs: { today: 'امروز', exercises: 'تمرینات', ergonomics: 'ارگونومی', progress: 'پیشرفت', primary: 'منوی اصلی' },
+  tabs: { today: 'امروز', exercises: 'تمرینات', ergonomics: 'وضعیت بدن', progress: 'پیشرفت', primary: 'منوی اصلی' },
 
   header: {
     dayOf: (day, total, phase) => `روز ${f(day)} از ${f(total)} · ${phase}`,
@@ -364,8 +364,16 @@ export const fa: Messages = {
     armPain: 'درد دست',
     numbness: 'بی‌حسی',
     editCheckin: 'ویرایش ثبت وضعیت',
-    upNext: 'تمرینات بعدی',
-    allExercises: 'همه تمرینات',
+    planTitle: 'برنامه امروز',
+    stepsDone: (done, total) => `${f(done)} از ${f(total)} انجام شد`,
+    checkinWhy: 'حدود ۲۰ ثانیه طول می‌کشد. پاسخ‌های شما تمرینات امروز را تعیین می‌کند.',
+    painSummary: (vas, label) => `درد ${f(vas)}/${f(10)} · ${label}`,
+    exercisesTitle: 'تمرینات',
+    exercisesLocked: 'پس از ثبت وضعیت فعال می‌شود',
+    exercisesPaused: 'تا بررسی علائم توسط پزشک متوقف است',
+    exercisesSummary: (done, total) => `${f(done)} از ${f(total)} انجام شد`,
+    postureTitle: 'وضعیت بدن و استراحت',
+    postureSummary: (habits, total, breaks, goal) => `${f(habits)}/${f(total)} عادت · ${f(breaks)}/${f(goal)} استراحت`,
   },
 
   checkin: {
@@ -469,8 +477,6 @@ export const fa: Messages = {
     paused: 'متوقف',
     lockedTitle: 'برای دیدن برنامه امروز، وضعیت خود را ثبت کنید',
     lockedBody: 'نمره درد شما تعیین می‌کند که امروز روز عادی، کاهش‌یافته یا اضطراری باشد.',
-    goToCheckin: 'رفتن به ثبت وضعیت',
-    title: 'تمرینات امروز',
     levelName: (tier, name) => `سطح ${f(tier)} · ${name}`,
     restProtocol: 'پروتکل استراحت و کمپرس',
     doneCount: (done, total) => `${f(done)}/${f(total)} انجام شد`,
@@ -480,6 +486,9 @@ export const fa: Messages = {
     pausedToday: 'متوقف‌شده برای امروز',
     pausedFlare: 'در حالت اضطراری متوقف است',
     pausedMedical: 'تا بررسی پزشکی متوقف است',
+    startRoutine: 'شروع برنامه تمرین',
+    continueRoutine: 'ادامه برنامه تمرین',
+    allDone: 'تمرینات امروز تمام شد. آفرین!',
   },
 
   session: {
@@ -494,7 +503,7 @@ export const fa: Messages = {
     unmute: 'وصل صدا',
     set: 'ست',
     rep: 'تکرار',
-    allDone: 'آفرین، تمرین امروز تمام شد.',
+    allDone: 'آفرین، این تمرین تمام شد.',
     start: 'شروع',
     startSet: 'شروع ست',
     startNextSet: 'شروع ست بعدی',
@@ -504,6 +513,9 @@ export const fa: Messages = {
     stop: 'توقف تایمر',
     logRep: 'ثبت دستی یک تکرار',
     finishSet: 'پایان همین ست',
+    position: (i, total) => `${f(i)} از ${f(total)}`,
+    nextUp: (name) => `بعدی: ${name}`,
+    finishRoutine: 'پایان',
   },
 
   timer: { hold: 'مکث', relax: 'استراحت', ready: 'آماده', minutes: 'دقیقه', secondHold: 'ثانیه مکث', remaining: 'باقی‌مانده', seconds: 'ثانیه', paused: 'متوقف' },
@@ -513,17 +525,13 @@ export const fa: Messages = {
     breaksGoal: (goal) => `هدف: حداقل ${f(goal)} بار امروز (ترجیحاً هر ساعت)`,
     goalMet: '· هدف محقق شد',
     breaksLabel: 'استراحت‌های حرکتی',
-    rule: 'قانون ۲۰-۲۰-۲۰:',
-    ruleBody: 'هر ۲۰ دقیقه، ۲۰ ثانیه به چیزی در فاصله ۶ متری نگاه کنید. هر بار چند غبغب‌گیری هم انجام دهید.',
     core: 'اصلی',
     tips: 'نکات',
     partOfDay: 'بخشی از روز من',
     partOfDayHint: '· به پایبندی روزانه شما اضافه می‌شود',
     include: (name) => `افزودن ${name} به برنامه روزانه`,
-    tasksDone: (done, total) => `${f(done)} از ${f(total)} مورد ارگونومی انجام شد`,
-    title: 'سبک زندگی و ارگونومی',
     intro: 'عادت‌های کوچک وضعیتی در طول روز بیش از هر تمرینی از دیسک شما محافظت می‌کنند.',
-    activities: 'فعالیت‌های روزمره',
+    habitsTitle: (done, total) => `عادت‌های روزانه · ${f(done)}/${f(total)}`,
     filter: 'فیلتر دسته‌ها',
     mine: 'روز من',
     all: (n) => `همه (${f(n)})`,
@@ -579,7 +587,7 @@ export const fa: Messages = {
     insights: {
       title: 'کار و استراحت',
       hint: 'جلسه‌های حالت کار در ۷ روز گذشته',
-      empty: 'از زبانه ارگونومی یک جلسه در حالت کار شروع کنید تا عادت‌های استراحت شما اینجا نمایش داده شود.',
+      empty: 'از زبانه وضعیت بدن یک جلسه در حالت کار شروع کنید تا عادت‌های استراحت شما اینجا نمایش داده شود.',
       workTime: 'زمان کار',
       hours: (h) => `${f(h)} ساعت`,
       workTimeHint: (breaks) => `${f(breaks)} استراحت در این روزها`,
@@ -597,7 +605,6 @@ export const fa: Messages = {
 
   progress: {
     loading: 'در حال بارگذاری نمودارها…',
-    title: 'پیشرفت شما',
     summary: (checkins, days) => `${f(checkins)} ثبت وضعیت در ${f(days)} روز`,
     painDelta: 'تغییر درد',
     painDeltaHint: (from, to, window) => `${f(from)} ← ${f(to)} (${f(window)} روز اول در برابر آخر)`,

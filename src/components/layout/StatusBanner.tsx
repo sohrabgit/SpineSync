@@ -2,8 +2,11 @@ import { ShieldAlert, TriangleAlert, TrendingDown } from 'lucide-react'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { useI18n } from '@/i18n'
 
-/** App-wide banner for non-standard plan levels (visible across all tabs). */
-export function StatusBanner() {
+/**
+ * App-wide banner for non-standard plan levels (visible across all tabs).
+ * `onToday` skips the medical-pause banner there, since Today shows the full pause screen.
+ */
+export function StatusBanner({ onToday = false }: { onToday?: boolean }) {
   const level = useRecoveryStore((s) => s.daily_log.adapted_plan_level)
   const { m } = useI18n()
   const b = m.banner
@@ -21,7 +24,7 @@ export function StatusBanner() {
       </div>
     )
   }
-  if (level === 'medical_pause') {
+  if (level === 'medical_pause' && !onToday) {
     return (
       <div role="alert" className="mx-4 mt-3 flex animate-fade-in gap-3 rounded-2xl border border-danger/50 bg-danger/15 p-3">
         <ShieldAlert className="mt-0.5 size-5 shrink-0 text-danger" aria-hidden />

@@ -54,23 +54,7 @@ export function ProgressDashboard() {
 
   return (
     <div className="space-y-5">
-      <div className="px-1">
-        <h1 className="text-xl font-bold tracking-tight text-ink">{t.title}</h1>
-        <p className="text-sm text-mute">{t.summary(checkins, Math.min(currentDay, maxDay))}</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <StatTile
-          label={t.painDelta}
-          icon={delta && delta.delta < 0 ? TrendingUp : TrendingDown}
-          iconClass={delta && delta.delta < 0 ? 'bg-warning text-bg' : 'bg-success text-bg'}
-          value={delta ? `${delta.delta > 0 ? '−' : delta.delta < 0 ? '+' : ''}${n(Math.abs(delta.delta))}` : '—'}
-          hint={delta ? t.painDeltaHint(delta.baseline, delta.recent, delta.window) : t.needsTwo}
-        />
-        <StatTile label={t.avgAdherence} icon={Target} value={avgAdherence !== null ? n(`${Math.round(avgAdherence)}%`) : '—'} hint={t.adherenceHint} />
-        <StatTile label={t.streak} icon={ChartLine} value={t.streakValue(streak)} hint={t.streakHint} />
-        <StatTile label={t.flareDays} icon={Flame} iconClass="bg-danger text-bg" value={n(flares)} hint={flares ? t.flareHint : t.noneYet} />
-      </div>
+      <p className="px-1 text-sm text-mute">{t.summary(checkins, Math.min(currentDay, maxDay))}</p>
 
       <Card>
         <div className="mb-2 flex items-start justify-between gap-2">
@@ -98,6 +82,19 @@ export function ProgressDashboard() {
           </>
         )}
       </Card>
+
+      <div className="grid grid-cols-2 gap-3">
+        <StatTile
+          label={t.painDelta}
+          icon={delta && delta.delta < 0 ? TrendingUp : TrendingDown}
+          iconClass={delta && delta.delta < 0 ? 'bg-warning text-bg' : 'bg-success text-bg'}
+          value={delta ? `${delta.delta > 0 ? '−' : delta.delta < 0 ? '+' : ''}${n(Math.abs(delta.delta))}` : '—'}
+          hint={delta ? t.painDeltaHint(delta.baseline, delta.recent, delta.window) : t.needsTwo}
+        />
+        <StatTile label={t.avgAdherence} icon={Target} value={avgAdherence !== null ? n(`${Math.round(avgAdherence)}%`) : '—'} hint={t.adherenceHint} />
+        <StatTile label={t.streak} icon={ChartLine} value={t.streakValue(streak)} hint={t.streakHint} />
+        <StatTile label={t.flareDays} icon={Flame} iconClass="bg-danger text-bg" value={n(flares)} hint={flares ? t.flareHint : t.noneYet} />
+      </div>
 
       <Card>
         <h2 className="text-sm font-semibold text-ink">{t.adherenceTitle}</h2>

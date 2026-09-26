@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
-import { CircleCheckBig, Pause, Play, Plus, RotateCcw, SkipForward, Square, TriangleAlert, Volume2, VolumeX } from 'lucide-react'
+import { ArrowRight, CircleCheckBig, Pause, Play, Plus, RotateCcw, SkipForward, Square, TriangleAlert, Volume2, VolumeX } from 'lucide-react'
 import type { ExerciseId } from '@/types/recovery'
 import { formatDose, isTimedActivity, sideForSet } from '@/data/exercises'
-import { completeSet, logRep, markComplete, markSkipped, resetProgress } from '@/lib/exerciseProgress'
+import { completeSet, logRep, markComplete, markSkipped, nextOpenExercise, resetProgress } from '@/lib/exerciseProgress'
 import { playCue, primeAudio } from '@/lib/cues'
 import { useHoldTimer } from '@/hooks/useHoldTimer'
 import { useWakeLock } from '@/hooks/useWakeLock'
@@ -12,24 +12,36 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { useI18n } from '@/i18n'
 import { HoldTimerRing } from './HoldTimerRing'
+import { useExerciseSheet } from './exerciseSheetStore'
 
-export function ExerciseSession({ exerciseId, onClose }: { exerciseId: ExerciseId | null; onClose: () => void }) {
-  const progress = useRecoveryStore((s) => s.daily_log.exercises_completed.find((e) => e.exercise_id === exerciseId))
+/** Session sheet for one exercise. Finishing or skipping moves on to the next unfinished one, so the plan plays as a guided routine. */
+export function ExerciseSession() {
+  const exerciseId = useExerciseSheet((s) => s.openId)
+  const open = useExerciseSheet((s) => s.open)
+  const onClose = useExerciseSheet((s) => s.close)
+  const exercises = useRecoveryStore((s) => s.daily_log.exercises_completed)
   const updateExercise = useRecoveryStore((s) => s.updateExercise)
   const { m } = useI18n()
+  const progress = exercises.find((e) => e.exercise_id === exerciseId)
   if (!exerciseId || !progress) return null
 
   const def = m.exercises[exerciseId]
   const t = m.session
   const done = progress.status === 'completed'
+  const next = nextOpenExercise(exercises, exerciseId)
+  const advance = () => (next ? open(next.exercise_id) : onClose())
+  const position = exercises.findIndex((e) => e.exercise_id === exerciseId) + 1
 
   return (
     <Sheet
       open
       onClose={onClose}
+      bodyKey={exerciseId}
       title={def.name}
       subtitle={
         <span className="flex flex-wrap items-center gap-1.5">
+          <span className="font-semibold text-ink/80">{t.position(position, exercises.length)}</span>
+          <span aria-hidden>·</span>
           {formatDose(progress, m)}
           {progress.effort_note && <Badge tone="info">{m.effort[progress.effort_note]}</Badge>}
         </span>
@@ -40,8 +52,16 @@ export function ExerciseSession({ exerciseId, onClose }: { exerciseId: ExerciseI
             <Button variant="secondary" onClick={() => updateExercise(exerciseId, resetProgress)}>
               <RotateCcw className="size-4" /> {t.redo}
             </Button>
-            <Button variant="success" className="flex-1" onClick={onClose}>
-              <CircleCheckBig className="size-4" /> {t.completed}
+            <Button variant={next ? 'primary' : 'success'} className="min-w-0 flex-1" onClick={advance}>
+              {next ? (
+                <>
+                  <span className="truncate">{t.nextUp(m.exercises[next.exercise_id].name)}</span> <ArrowRight className="size-4 shrink-0 rtl:-scale-x-100" />
+                </>
+              ) : (
+                <>
+                  <CircleCheckBig className="size-4" /> {t.finishRoutine}
+                </>
+              )}
             </Button>
           </div>
         ) : (
@@ -50,7 +70,7 @@ export function ExerciseSession({ exerciseId, onClose }: { exerciseId: ExerciseI
               variant="secondary"
               onClick={() => {
                 updateExercise(exerciseId, markSkipped)
-                onClose()
+                advance()
               }}
             >
               <SkipForward className="size-4 rtl:-scale-x-100" /> {t.skip}
@@ -59,7 +79,7 @@ export function ExerciseSession({ exerciseId, onClose }: { exerciseId: ExerciseI
               className="flex-1"
               onClick={() => {
                 updateExercise(exerciseId, markComplete)
-                onClose()
+                advance()
               }}
             >
               <CircleCheckBig className="size-4" /> {t.markComplete}
