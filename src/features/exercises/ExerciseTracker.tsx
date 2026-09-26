@@ -1,9 +1,11 @@
-import { CircleCheckBig, Play, Radio, ShieldAlert } from 'lucide-react'
+import { CircleCheckBig, Play, ShieldAlert } from 'lucide-react'
 import { suppressedExercises, tierFor } from '@/lib/adaptive'
 import { markComplete, nextOpenExercise, resetProgress } from '@/lib/exerciseProgress'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { Button } from '@/components/ui/Button'
 import { Card, SectionTitle } from '@/components/ui/Card'
+import { cn } from '@/components/ui/cn'
+import { LEVEL_ICON, LEVEL_TONE, TONE_STYLES } from '@/components/ui/tone'
 import { useI18n } from '@/i18n'
 import { DailyPainCheckin } from '@/features/today/DailyPainCheckin'
 import { ExerciseCard, SuppressedExerciseCard } from './ExerciseCard'
@@ -14,7 +16,7 @@ export function ExerciseTracker() {
   const phase = useRecoveryStore((s) => s.phase)
   const updateExercise = useRecoveryStore((s) => s.updateExercise)
   const openSession = useExerciseSheet((s) => s.open)
-  const { m } = useI18n()
+  const { m, n } = useI18n()
   const t = m.exercisesUi
 
   const level = log.adapted_plan_level
@@ -24,11 +26,7 @@ export function ExerciseTracker() {
   if (!log.pain_checkin || !level) {
     return (
       <Card className="animate-fade-in">
-        <div className="mb-1 flex items-center gap-2">
-          <Radio className="size-4 text-brand" aria-hidden />
-          <h2 className="text-base font-bold text-ink">{t.lockedTitle}</h2>
-        </div>
-        <p className="mb-4 text-xs text-mute">{t.lockedBody}</p>
+        <h2 className="mb-4 text-base font-bold text-ink">{t.lockedTitle}</h2>
         <DailyPainCheckin />
       </Card>
     )
@@ -39,16 +37,22 @@ export function ExerciseTracker() {
   const suppressed = suppressedExercises(level, phase)
   const next = nextOpenExercise(exercises)
   const started = exercises.some((e) => e.status !== 'pending')
+  const LevelIcon = LEVEL_ICON[level]
 
   return (
     <div className="space-y-5">
       <Card>
-        <div className="flex items-baseline justify-between gap-3">
-          <p className="text-sm font-semibold text-ink">{tier !== null ? t.levelName(tier, m.tiers[tier]) : level === 'flare_up' ? t.restProtocol : t.paused}</p>
-          <span className="text-xs font-semibold text-mute tabular-nums">{t.doneCount(completed, exercises.length)}</span>
+        <div className="flex items-center justify-between gap-3">
+          <p className="flex items-center gap-2 text-sm font-semibold text-ink">
+            <LevelIcon className={cn('size-4', TONE_STYLES[LEVEL_TONE[level]].icon)} aria-label={m.levels[level].label} />
+            {tier !== null ? t.levelName(tier, m.tiers[tier]) : level === 'flare_up' ? t.restProtocol : t.paused}
+          </p>
+          <span className="text-xs font-semibold text-mute tabular-nums">
+            {n(completed)}/{n(exercises.length)}
+          </span>
         </div>
-        {/* Why today's plan looks the way it does (standard, eased, flare-up or paused). */}
-        <p className="mt-0.5 text-xs text-mute">{m.levels[level].description}</p>
+        {/* Explain an eased plan here; flare-up and pause days have their own app-wide banner. */}
+        {level === 'reduced' && <p className={cn('mt-1 text-xs font-medium', TONE_STYLES[LEVEL_TONE[level]].text)}>{m.levels[level].description}</p>}
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-panel-2" aria-hidden>
           <div
             className="h-full rounded-full bg-gradient-to-r from-brand to-success transition-all duration-500 rtl:bg-gradient-to-l"
@@ -75,7 +79,6 @@ export function ExerciseTracker() {
       )}
 
       <section>
-        <SectionTitle title={level === 'flare_up' ? t.flareCare : t.plan} />
         <ul className="space-y-2">
           {exercises.map((e) => (
             <ExerciseCard

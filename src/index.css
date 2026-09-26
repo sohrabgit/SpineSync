@@ -69,12 +69,10 @@
   }
 }
 
-/* Small tracked-out uppercase label. */
+/* Small quiet section label. */
 @utility cap {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 600;
   line-height: 1.2;
 }
 
@@ -166,6 +164,58 @@
 .no-scrollbar {
   scrollbar-width: none;
 }
+
+/*
+ * Exercise figures (components/illustrations). Every move shares one 4 s cycle:
+ * ease in, hold, ease back, so the cue arrows (fig-cue) line up with the motion.
+ * Under reduced motion the global rule below stops them on the start pose, with
+ * the cue arrows still showing the direction.
+ */
+.fig * {
+  --fig-cycle: 4s;
+}
+.fig-tuck { animation: fig-tuck var(--fig-cycle) ease-in-out infinite; }
+.fig-tilt { animation: fig-tilt var(--fig-cycle) ease-in-out infinite; }
+.fig-cue { animation: fig-cue var(--fig-cycle) ease-in-out infinite; }
+.fig-squeeze-l { animation: fig-squeeze-l var(--fig-cycle) ease-in-out infinite; }
+.fig-squeeze-r { animation: fig-squeeze-r var(--fig-cycle) ease-in-out infinite; }
+.fig-roll { animation: fig-roll 2.4s linear infinite; }
+.fig-spin { animation: fig-spin 2.4s linear infinite; }
+.fig-leg-a { animation: fig-swing 1.1s ease-in-out infinite alternate; }
+.fig-leg-b { animation: fig-swing 1.1s ease-in-out infinite alternate-reverse; }
+.fig-ground { animation: fig-ground 1.1s linear infinite; }
+.fig-glow { animation: fig-glow 2.6s ease-in-out infinite; }
+.fig-rise { animation: fig-rise 2.2s ease-out infinite; }
+.fig-twinkle { animation: fig-twinkle 1.8s ease-in-out infinite; }
+.fig-breathe { animation: fig-breathe 5s ease-in-out infinite; }
+.fig-reach-l { animation: fig-reach-l var(--fig-cycle) ease-in-out infinite; }
+.fig-reach-r { animation: fig-reach-r var(--fig-cycle) ease-in-out infinite; }
+.fig-tall { animation: fig-tall var(--fig-cycle) ease-in-out infinite; }
+.fig-ring { animation: pain-ring 1.4s ease-out infinite; }
+
+@keyframes fig-tuck { 0%, 18% { transform: none; } 42%, 72% { transform: translateX(-6px); } 96%, 100% { transform: none; } }
+@keyframes fig-tilt { 0%, 15% { transform: none; } 42%, 72% { transform: rotate(-17deg); } 96%, 100% { transform: none; } }
+@keyframes fig-cue { 0%, 12% { opacity: 0.15; } 32%, 70% { opacity: 1; } 92%, 100% { opacity: 0.15; } }
+@keyframes fig-squeeze-l { 0%, 18% { transform: none; } 42%, 72% { transform: translateX(6px); } 96%, 100% { transform: none; } }
+@keyframes fig-squeeze-r { 0%, 18% { transform: none; } 42%, 72% { transform: translateX(-6px); } 96%, 100% { transform: none; } }
+/* Backward shoulder circle: up, back, down, forward. */
+@keyframes fig-roll {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-1px, -5px); }
+  50% { transform: translate(-5px, -3px); }
+  75% { transform: translate(-3px, 1px); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes fig-spin { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+@keyframes fig-swing { from { transform: rotate(22deg); } to { transform: rotate(-22deg); } }
+@keyframes fig-ground { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 10; } }
+@keyframes fig-glow { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+@keyframes fig-rise { 0% { transform: translateY(4px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-10px); opacity: 0; } }
+@keyframes fig-twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+@keyframes fig-breathe { 0%, 100% { transform: none; } 45% { transform: scaleY(1.12); } }
+@keyframes fig-reach-l { 0%, 12% { transform: none; } 42%, 72% { transform: rotate(165deg); } 96%, 100% { transform: none; } }
+@keyframes fig-reach-r { 0%, 12% { transform: none; } 42%, 72% { transform: rotate(-165deg); } 96%, 100% { transform: none; } }
+@keyframes fig-tall { 0%, 18% { transform: none; } 45%, 70% { transform: translateY(-3px); } 96%, 100% { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   *,

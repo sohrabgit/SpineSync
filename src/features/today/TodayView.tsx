@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { Check, ChevronRight, ClipboardList, Lock, Pencil, Play } from 'lucide-react'
+import { Check, ChevronRight, ClipboardList, Footprints, Hand, ListChecks, Lock, Pencil, Play, Zap } from 'lucide-react'
 import { BREAK_GOAL, BREAKS_TASK_ID } from '@/data/ergonomics'
 import { isErgoTaskDone, scheduledErgoTasks, vasBand } from '@/lib/metrics'
 import { nextOpenExercise } from '@/lib/exerciseProgress'
@@ -11,7 +11,9 @@ import { Button } from '@/components/ui/Button'
 import { Card, SectionTitle } from '@/components/ui/Card'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { cn } from '@/components/ui/cn'
-import { LEVEL_TONE, vasColor } from '@/components/ui/tone'
+import { LEVEL_ICON, LEVEL_TONE, TONE_STYLES, vasColor } from '@/components/ui/tone'
+import { PainFace } from '@/components/ui/PainFace'
+import { PHASE_ICONS } from '@/components/ui/phaseIcons'
 import { useI18n } from '@/i18n'
 import { useExerciseSheet } from '@/features/exercises/exerciseSheetStore'
 import { CoachInsights } from './CoachInsights'
@@ -32,7 +34,7 @@ export function TodayView({ onNavigate }: { onNavigate: (t: TabId) => void }) {
   const openSession = useExerciseSheet((s) => s.open)
   const [editing, setEditing] = useState(false)
   const [ndiOpen, setNdiOpen] = useState(false)
-  const { m } = useI18n()
+  const { m, n } = useI18n()
   const t = m.today
 
   const checkin = log.pain_checkin
@@ -49,10 +51,9 @@ export function TodayView({ onNavigate }: { onNavigate: (t: TabId) => void }) {
   const habitsDone = habits.filter((id) => isErgoTaskDone(log.ergonomics_checklist, id)).length
   const breaks = log.ergonomics_checklist.hourly_breaks_count
 
-  const checkinState: StepState = checkin ? 'done' : 'todo'
   const exState: StepState = !checkin || paused ? 'locked' : nextEx ? 'todo' : 'done'
   const postureState: StepState = scheduled.every((id) => isErgoTaskDone(log.ergonomics_checklist, id)) ? 'done' : 'todo'
-  const stepsDone = [checkinState, exState, postureState].filter((s) => s === 'done').length
+  const LevelIcon = level ? LEVEL_ICON[level] : null
 
   return (
     <div className="space-y-5">
@@ -61,18 +62,13 @@ export function TodayView({ onNavigate }: { onNavigate: (t: TabId) => void }) {
       {paused && checkin && !editing && <MedicalPauseScreen flags={checkin.red_flags} onEdit={() => setEditing(true)} />}
 
       <section aria-label={t.planTitle}>
-        <SectionTitle
-          title={t.planTitle}
-          action={
-            <span className={cn('text-xs font-semibold tabular-nums', stepsDone === 3 ? 'text-success' : 'text-mute')}>{t.stepsDone(stepsDone, 3)}</span>
-          }
-        />
+        <SectionTitle title={t.planTitle} />
         <ol className="space-y-2">
           {/* 1 · Check-in */}
           <li>
             {!checkin || editing ? (
               <Card className="animate-fade-in">
-                <StepHeader index={1} state="todo" title={checkin ? t.updateCheckin : t.morningCheckin} subtitle={checkin ? undefined : t.checkinWhy} />
+                <StepHeader index={1} state="todo" title={checkin ? t.updateCheckin : t.morningCheckin} />
                 <div className="mt-4">
                   <DailyPainCheckin initial={checkin} onDone={() => setEditing(false)} onCancel={checkin ? () => setEditing(false) : undefined} />
                 </div>
@@ -84,16 +80,27 @@ export function TodayView({ onNavigate }: { onNavigate: (t: TabId) => void }) {
                 title={t.morningCheckin}
                 subtitle={
                   <span className="flex flex-wrap items-center gap-1.5">
+                    <PainFace vas={checkin.vas_score} size={18} />
                     <span className="font-semibold tabular-nums" style={{ color: vasColor(checkin.vas_score) }}>
-                      {t.painSummary(checkin.vas_score, m.vas[vasBand(checkin.vas_score)])}
+                      {t.painSummary(n(checkin.vas_score), m.vas[vasBand(checkin.vas_score)])}
                     </span>
-                    {level && (
+                    {/* Standard days need no label; anything else shows its level. */}
+                    {level && level !== 'standard' && LevelIcon && (
                       <Badge tone={LEVEL_TONE[level]} pulse={level === 'flare_up'}>
+                        <LevelIcon className="size-3" aria-hidden />
                         {m.levels[level].short}
                       </Badge>
                     )}
-                    {checkin.radiating_pain && <Badge tone="critical">{t.armPain}</Badge>}
-                    {checkin.numbness_present && <Badge tone="warning">{t.numbness}</Badge>}
+                    {checkin.radiating_pain && (
+                      <span className={cn('grid size-5 place-items-center rounded-full', TONE_STYLES.critical.bg)} title={t.armPain}>
+                        <Zap className="size-3 text-danger" aria-label={t.armPain} />
+                      </span>
+                    )}
+                    {checkin.numbness_present && (
+                      <span className={cn('grid size-5 place-items-center rounded-full', TONE_STYLES.warning.bg)} title={t.numbness}>
+                        <Hand className="size-3 text-warning" aria-label={t.numbness} />
+                      </span>
+                    )}
                   </span>
                 }
                 action={
@@ -113,7 +120,7 @@ export function TodayView({ onNavigate }: { onNavigate: (t: TabId) => void }) {
                 state="todo"
                 accent
                 title={m.ndi.dueTitle}
-                subtitle={m.ndi.dueBody(ndiDue)}
+                subtitle={m.ndi.dueBody}
                 action={
                   <Button variant="secondary" className="min-h-10 px-3 text-xs" onClick={() => setNdiOpen(true)}>
                     {m.common.start}
@@ -130,13 +137,7 @@ export function TodayView({ onNavigate }: { onNavigate: (t: TabId) => void }) {
               index={2}
               state={exState}
               title={t.exercisesTitle}
-              subtitle={
-                !checkin
-                  ? t.exercisesLocked
-                  : paused
-                    ? t.exercisesPaused
-                    : t.exercisesSummary(exDone, exercises.length)
-              }
+              subtitle={!checkin ? undefined : paused ? t.exercisesPaused : t.exercisesSummary(n(exDone), n(exercises.length))}
               progress={checkin && !paused && exercises.length ? exDone / exercises.length : undefined}
               onClick={checkin ? () => onNavigate('exercises') : undefined}
               action={
@@ -155,7 +156,17 @@ export function TodayView({ onNavigate }: { onNavigate: (t: TabId) => void }) {
               index={3}
               state={postureState}
               title={t.postureTitle}
-              subtitle={t.postureSummary(habitsDone, habits.length, Math.min(breaks, BREAK_GOAL), BREAK_GOAL)}
+              subtitle={
+                <span className="flex items-center gap-3 tabular-nums">
+                  <span className="sr-only">{t.postureSummary(n(habitsDone), n(habits.length), n(Math.min(breaks, BREAK_GOAL)), n(BREAK_GOAL))}</span>
+                  <span className="inline-flex items-center gap-1" aria-hidden>
+                    <ListChecks className="size-3.5" /> {n(habitsDone)}/{n(habits.length)}
+                  </span>
+                  <span className="inline-flex items-center gap-1" aria-hidden>
+                    <Footprints className="size-3.5" /> {n(Math.min(breaks, BREAK_GOAL))}/{n(BREAK_GOAL)}
+                  </span>
+                </span>
+              }
               progress={scheduled.length ? scheduled.filter((id) => isErgoTaskDone(log.ergonomics_checklist, id)).length / scheduled.length : undefined}
               onClick={() => onNavigate('ergonomics')}
             />
@@ -163,8 +174,8 @@ export function TodayView({ onNavigate }: { onNavigate: (t: TabId) => void }) {
         </ol>
       </section>
 
-      {/* The check-in step and the pause screen already say these. */}
-      <CoachInsights hide={['checkin', 'red-flag']} />
+      {/* Already said by the check-in step, the pause screen, the flare-up banner, the Posture step and the Work mode bar. */}
+      <CoachInsights hide={['checkin', 'red-flag', 'flare', 'breaks', 'sitting']} limit={1} />
 
       <DaySchedule />
     </div>
@@ -185,24 +196,26 @@ function Hero({ day, phase, compliance }: { day: number; phase: 1 | 2 | 3 | 4; c
             {t.day} {n(day)}
             <span className="text-base font-medium text-dim"> / {n(PROGRAM_DAYS)}</span>
           </p>
-          <p className="mt-0.5 text-sm text-mute">{t.phase(phase, m.phases[PHASES[phase].phase].name)}</p>
+          <p className="mt-0.5 text-sm text-mute">{m.phases[PHASES[phase].phase].name}</p>
+          {/* Journey bar: one segment per phase, sized by its length, with the phase glyph beneath. */}
           <div className="mt-3 flex gap-1" aria-hidden>
             {([1, 2, 3, 4] as const).map((p) => {
               const { startDay, endDay } = PHASES[p]
               const fill = Math.min(1, Math.max(0, (shown - startDay + 1) / (endDay - startDay + 1)))
+              const Icon = PHASE_ICONS[p]
               return (
-                <span key={p} className="h-1.5 overflow-hidden rounded-full bg-panel-2" style={{ flex: endDay - startDay + 1 }}>
-                  <span className={cn('block h-full rounded-full transition-all duration-700', p === phase ? 'bg-brand' : 'bg-brand/50')} style={{ width: `${fill * 100}%` }} />
+                <span key={p} className="flex min-w-0 flex-col items-center gap-1.5" style={{ flex: endDay - startDay + 1 }}>
+                  <span className="block h-1.5 w-full overflow-hidden rounded-full bg-panel-2">
+                    <span className={cn('block h-full rounded-full transition-all duration-700', p === phase ? 'bg-brand' : 'bg-brand/50')} style={{ width: `${fill * 100}%` }} />
+                  </span>
+                  <Icon className={cn('size-3.5', p === phase ? 'text-brand' : p < phase ? 'text-brand/50' : 'text-dim/60')} strokeWidth={2.2} />
                 </span>
               )
             })}
           </div>
         </div>
         <ProgressRing value={compliance / 100} size={76} stroke={7} color="#5cc8b0" track="#2c3140" label={t.adherenceAria(`${compliance}%`)}>
-          <div className="text-center leading-none">
-            <span className="text-base font-bold text-ink tabular-nums">{n(`${Math.round(compliance)}%`)}</span>
-            <span className="mt-0.5 block text-[9px] font-bold tracking-[0.1em] text-mute uppercase">{t.todayShort}</span>
-          </div>
+          <span className="text-base font-bold text-ink tabular-nums">{n(`${Math.round(compliance)}%`)}</span>
         </ProgressRing>
       </div>
     </section>
@@ -233,14 +246,11 @@ function StepMarker({ index, icon, state, accent, progress }: { index?: number; 
   )
 }
 
-function StepHeader({ index, state, title, subtitle }: { index: number; state: StepState; title: string; subtitle?: string }) {
+function StepHeader({ index, state, title }: { index: number; state: StepState; title: string }) {
   return (
     <div className="flex items-center gap-3">
       <StepMarker index={index} state={state} />
-      <div className="min-w-0">
-        <h3 className="text-base font-bold text-ink">{title}</h3>
-        {subtitle && <p className="text-xs text-mute">{subtitle}</p>}
-      </div>
+      <h3 className="min-w-0 text-base font-bold text-ink">{title}</h3>
     </div>
   )
 }
@@ -251,7 +261,7 @@ interface StepRowProps {
   state: StepState
   accent?: boolean
   title: string
-  subtitle: ReactNode
+  subtitle?: ReactNode
   progress?: number
   action?: ReactNode
   onClick?: () => void
@@ -264,7 +274,7 @@ function StepRow({ index, icon, state, accent, title, subtitle, progress, action
       <StepMarker index={index} icon={icon} state={state} accent={accent} progress={progress} />
       <span className="min-w-0 flex-1">
         <span className={cn('block text-sm font-semibold', state === 'locked' ? 'text-mute' : 'text-ink')}>{title}</span>
-        <span className="mt-0.5 block text-xs text-mute">{subtitle}</span>
+        {subtitle && <span className="mt-0.5 block text-xs text-mute">{subtitle}</span>}
       </span>
     </>
   )

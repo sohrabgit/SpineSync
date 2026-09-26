@@ -96,35 +96,34 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
 
         <section className="py-3">
           <h3 className="text-sm font-semibold text-ink">{t.previewTitle}</h3>
-          <p className="mt-0.5 text-xs text-mute">
-            {t.previewBody}
-            {offset > 0 && <strong className="text-warning">{t.clockAhead(offset)}</strong>}
-          </p>
+          {offset > 0 && <p className="mt-0.5 text-xs font-semibold text-warning">{t.clockAhead(offset)}</p>}
           <Button variant="secondary" className="mt-3 w-full" onClick={simulateNextDay}>
             <FastForward className="size-4 rtl:-scale-x-100" /> {t.simulate}
           </Button>
         </section>
 
         <section className="py-3">
-          <h3 className="text-sm font-semibold text-danger">{t.resetTitle}</h3>
-          <p className="mt-0.5 text-xs text-mute">{t.resetBody}</p>
+          {/* The consequence is spelled out only at the moment of confirming. */}
           {confirmReset ? (
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <Button variant="secondary" onClick={() => setConfirmReset(false)}>
-                {m.common.cancel}
-              </Button>
-              <Button
-                variant="danger"
-                onClick={() => {
-                  resetProgram()
-                  close()
-                }}
-              >
-                {t.resetConfirm}
-              </Button>
+            <div className="animate-fade-in">
+              <p className="text-xs font-medium text-danger">{t.resetBody}</p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <Button variant="secondary" onClick={() => setConfirmReset(false)}>
+                  {m.common.cancel}
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => {
+                    resetProgram()
+                    close()
+                  }}
+                >
+                  {t.resetConfirm}
+                </Button>
+              </div>
             </div>
           ) : (
-            <Button variant="secondary" className="mt-3 w-full text-danger" onClick={() => setConfirmReset(true)}>
+            <Button variant="secondary" className="w-full text-danger" onClick={() => setConfirmReset(true)}>
               <RotateCcw className="size-4" /> {t.resetTitle}
             </Button>
           )}

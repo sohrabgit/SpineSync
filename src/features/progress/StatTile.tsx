@@ -1,25 +1,15 @@
-import type { LucideIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Card } from '@/components/ui/Card'
 
-interface Props {
-  label: string
-  value: string
-  hint?: string
-  icon: LucideIcon
-  iconClass?: string
-}
-
-export function StatTile({ label, value, hint, icon: Icon, iconClass = 'bg-brand text-bg' }: Props) {
+/** A labelled number with a small graphic beside it that shows what the number means. */
+export function StatTile({ label, value, visual, valueClass = 'text-ink' }: { label: string; value: string; visual?: ReactNode; valueClass?: string }) {
   return (
     <Card className="p-3">
-      <div className="flex items-center gap-2">
-        <span className={`knob grid size-8 place-items-center ${iconClass}`}>
-          <Icon className="size-4" strokeWidth={2.2} aria-hidden />
-        </span>
-        <p className="cap text-[11px] text-mute">{label}</p>
+      <p className="cap text-mute">{label}</p>
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <p className={`text-2xl font-bold tracking-tight tabular-nums ${valueClass}`}>{value}</p>
+        {visual}
       </div>
-      <p className="mt-2 text-2xl font-bold tracking-tight tabular-nums text-ink">{value}</p>
-      {hint && <p className="mt-0.5 text-[11px] text-mute">{hint}</p>}
     </Card>
   )
 }

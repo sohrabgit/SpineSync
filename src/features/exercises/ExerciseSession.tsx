@@ -1,6 +1,6 @@
-import { useCallback } from 'react'
-import { ArrowRight, CircleCheckBig, Pause, Play, Plus, RotateCcw, SkipForward, Square, TriangleAlert, Volume2, VolumeX } from 'lucide-react'
-import type { ExerciseId } from '@/types/recovery'
+import { useCallback, useState } from 'react'
+import { ArrowRight, ChevronDown, ChevronsRight, CircleCheckBig, Info, Pause, Play, Plus, RotateCcw, SkipForward, Square, TriangleAlert, Volume2, VolumeX } from 'lucide-react'
+import type { ExerciseId, SideId } from '@/types/recovery'
 import { formatDose, isTimedActivity, sideForSet } from '@/data/exercises'
 import { completeSet, logRep, markComplete, markSkipped, nextOpenExercise, resetProgress } from '@/lib/exerciseProgress'
 import { playCue, primeAudio } from '@/lib/cues'
@@ -10,8 +10,11 @@ import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { Sheet } from '@/components/ui/Sheet'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { cn } from '@/components/ui/cn'
+import { ExerciseFigure } from '@/components/illustrations/NeckFigure'
 import { useI18n } from '@/i18n'
 import { BreathingOrb } from './BreathingOrb'
+import { EXERCISE_ICONS } from './exerciseIcons'
 import { useExerciseSheet } from './exerciseSheetStore'
 
 /** Session sheet for one exercise. Finishing or skipping moves on to the next unfinished one, so the plan plays as a guided routine. */
@@ -90,30 +93,52 @@ export function ExerciseSession() {
     >
       <SessionTimer key={`${exerciseId}-${progress.hold_seconds}`} exerciseId={exerciseId} />
 
-      <section className="mt-6">
-        <h3 className="cap text-mute">{t.howTo}</h3>
-        <p className="mt-1 text-xs text-mute">{def.target}</p>
-        <ol className="mt-3 space-y-2">
-          {def.steps.map((step, i) => (
-            <li key={step} className="flex gap-3 text-sm text-ink/90">
-              <span className="grid size-6 shrink-0 place-items-center rounded-full bg-brand/12 text-xs font-bold text-brand">{i + 1}</span>
-              <span className="pt-0.5">{step}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
-      <section className="mt-4 rounded-e-[12px] rounded-s-[4px] border-s-4 border-warning bg-well p-3">
-        <h3 className="flex items-center gap-1.5 text-xs font-semibold text-warning">
-          <TriangleAlert className="size-3.5" /> {t.safety}
-        </h3>
-        <ul className="mt-1 space-y-0.5 text-xs text-ink/80">
-          {def.cautions.map((c) => (
-            <li key={c}>• {c}</li>
-          ))}
-          <li>• {t.stopRule}</li>
-        </ul>
-      </section>
+      <HowTo exerciseId={exerciseId} side={sideForSet(exerciseId, Math.min(progress.sets_done, progress.target_sets - 1))} />
     </Sheet>
+  )
+}
+
+/**
+ * Reference for the move, folded into one row so the sheet opens on the timer alone:
+ * the animated figure, the steps and the safety notes appear only when expanded.
+ * The sheet remounts its body per exercise, so each one opens collapsed.
+ */
+function HowTo({ exerciseId, side }: { exerciseId: ExerciseId; side?: SideId | null }) {
+  const [open, setOpen] = useState(false)
+  const { m, n } = useI18n()
+  const t = m.session
+  const def = m.exercises[exerciseId]
+  return (
+    <section className="mt-3 overflow-hidden rounded-2xl border border-line/60 bg-well">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex min-h-12 w-full items-center gap-2 px-4 text-sm font-semibold text-ink">
+        <Info className="size-4 text-dim" aria-hidden />
+        <span className="flex-1 text-start">{t.howTo}</span>
+        <ChevronDown className={cn('size-4 text-dim transition-transform', open && 'rotate-180')} aria-hidden />
+      </button>
+      {open && (
+        <div className="animate-fade-in border-t border-line/60 px-4 pb-4">
+          <div className="grid place-items-center pt-3">
+            <ExerciseFigure pose={exerciseId} side={side} color={EXERCISE_ICONS[exerciseId].color} size={150} />
+          </div>
+          <ol className="mt-2 space-y-2">
+            {def.steps.map((step, i) => (
+              <li key={step} className="flex gap-3 text-sm text-ink/90">
+                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-brand/12 text-xs font-bold text-brand">{n(i + 1)}</span>
+                <span className="pt-0.5">{step}</span>
+              </li>
+            ))}
+          </ol>
+          <div aria-label={t.safety} className="mt-4 flex gap-2.5 rounded-xl bg-warning/8 p-3">
+            <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
+            <ul className="space-y-0.5 text-xs text-ink/80">
+              {[...def.cautions, t.stopRule].map((c) => (
+                <li key={c}>{c}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </section>
   )
 }
 
@@ -218,23 +243,24 @@ function SessionTimer({ exerciseId }: { exerciseId: ExerciseId }) {
             </>
           )}
           {!timed && (
-            <Button variant="secondary" onClick={() => updateExercise(exerciseId, logRep)} aria-label={t.logRep}>
-              <Plus className="size-4" /> {t.rep}
-            </Button>
+            <>
+              <Button variant="secondary" onClick={() => updateExercise(exerciseId, logRep)} aria-label={t.logRep} title={t.logRep}>
+                <Plus className="size-4" /> {t.rep}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  timer.stop()
+                  updateExercise(exerciseId, completeSet)
+                }}
+                aria-label={t.finishSet}
+                title={t.finishSet}
+              >
+                <ChevronsRight className="size-4 rtl:-scale-x-100" />
+              </Button>
+            </>
           )}
         </div>
-      )}
-      {!timed && !done && (
-        <button
-          type="button"
-          onClick={() => {
-            timer.stop()
-            updateExercise(exerciseId, completeSet)
-          }}
-          className="mt-2 min-h-10 text-xs font-bold tracking-[0.04em] text-brand uppercase"
-        >
-          {t.finishSet}
-        </button>
       )}
     </div>
   )

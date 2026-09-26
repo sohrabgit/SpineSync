@@ -1,3 +1,4 @@
+import { CircleCheck, Flame, ShieldAlert, TrendingDown, type LucideIcon } from 'lucide-react'
 import type { PlanLevel } from '@/types/recovery'
 import type { Tone } from '@/lib/metrics'
 
@@ -19,6 +20,14 @@ export const LEVEL_TONE: Record<PlanLevel, Tone> = {
   reduced: 'warning',
   flare_up: 'critical',
   medical_pause: 'critical',
+}
+
+/** Plan level glyphs, so the level reads without its label. */
+export const LEVEL_ICON: Record<PlanLevel, LucideIcon> = {
+  standard: CircleCheck,
+  reduced: TrendingDown,
+  flare_up: Flame,
+  medical_pause: ShieldAlert,
 }
 
 /** VAS colour ramp (0 = green → 10 = coral), matching the slider track. */

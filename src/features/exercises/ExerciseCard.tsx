@@ -38,10 +38,7 @@ export function ExerciseCard({ progress, onOpen, onToggleComplete }: Props) {
         </ProgressRing>
         <span className="min-w-0 flex-1">
           <span className={cn('block truncate text-sm font-semibold', done ? 'text-mute line-through decoration-success/60' : 'text-ink')}>{name}</span>
-          <span className="block truncate text-xs text-mute">
-            {formatDose(progress, m)}
-            {progress.effort_note ? ` · ${m.effort[progress.effort_note]}` : ''}
-          </span>
+          <span className="block truncate text-xs text-mute">{formatDose(progress, m)}</span>
           {/* "To do" is implied by the empty check circle; only call out states worth noticing. */}
           {(progress.status === 'in_progress' || progress.status === 'skipped') && (
             <span className="mt-1 flex items-center gap-2">
@@ -80,11 +77,8 @@ export function SuppressedExerciseCard({ id, reason }: { id: ExerciseId; reason:
       <span className="grid size-12 place-items-center rounded-full bg-panel-2">
         <Icon className="size-4" aria-hidden />
       </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-sm font-semibold">{m.exercises[id].name}</span>
-        <span className="block text-xs">{reason}</span>
-      </span>
-      <Lock className="size-4" aria-label={m.exercisesUi.paused} />
+      <span className="min-w-0 flex-1 text-sm font-semibold">{m.exercises[id].name}</span>
+      <Lock className="size-4" aria-label={reason} />
     </li>
   )
 }

@@ -1,9 +1,19 @@
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
-import { DAILY_SCHEDULE } from '@/data/schedule'
-import { Card } from '@/components/ui/Card'
+import { BedDouble, ChevronRight, Dumbbell, Monitor, Sunrise, Sunset, Utensils, type LucideIcon } from 'lucide-react'
+import { DAILY_SCHEDULE, type ScheduleBlockId } from '@/data/schedule'
+import { Sheet } from '@/components/ui/Sheet'
 import { cn } from '@/components/ui/cn'
 import { useI18n } from '@/i18n'
+
+const BLOCK_ICONS: Record<ScheduleBlockId, LucideIcon> = {
+  morning: Sunrise,
+  work1: Monitor,
+  lunch: Utensils,
+  work2: Monitor,
+  exercise: Dumbbell,
+  evening: Sunset,
+  sleep: BedDouble,
+}
 
 function currentBlockIndex(now: Date): number {
   const minutes = now.getHours() * 60 + now.getMinutes()
@@ -15,50 +25,62 @@ function currentBlockIndex(now: Date): number {
   return idx
 }
 
+/** One row for what the routine says right now; the full day opens in a sheet. */
 export function DaySchedule() {
   const [open, setOpen] = useState(false)
   const { m, n } = useI18n()
   const current = currentBlockIndex(new Date())
-  const blocks = open ? DAILY_SCHEDULE : DAILY_SCHEDULE.filter((_, i) => i >= Math.max(0, current) && i <= Math.max(0, current) + 1)
+  const block = DAILY_SCHEDULE[Math.max(0, current)]!
+  const Icon = BLOCK_ICONS[block.id]
 
   return (
-    <Card className="p-0">
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-center justify-between px-4 pt-4 pb-2 text-start">
-        <span className="text-sm font-semibold text-ink">{m.routine.title}</span>
-        <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand">
-          {open ? m.routine.less : m.routine.full}
-          <ChevronDown className={cn('size-4 transition-transform', open && 'rotate-180')} />
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex w-full items-center gap-3 rounded-2xl border border-line/60 bg-panel p-3 text-start hover:border-line-strong"
+        aria-label={`${m.routine.title}: ${m.schedule[block.id].title}`}
+      >
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand/12 text-brand">
+          <Icon className="size-[18px]" aria-hidden />
         </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs text-mute tabular-nums">
+            {current >= 0 ? m.routine.now : n(block.time)}
+          </span>
+          <span className="block truncate text-sm font-semibold text-ink">{m.schedule[block.id].title}</span>
+        </span>
+        <ChevronRight className="size-4 shrink-0 text-dim rtl:-scale-x-100" aria-hidden />
       </button>
-      <ol className="relative px-4 pb-4">
-        {blocks.map((b) => {
-          const i = DAILY_SCHEDULE.indexOf(b)
-          const isNow = i === current
-          const copy = m.schedule[b.id]
-          return (
-            <li key={b.id} className="relative flex gap-3 pb-3 last:pb-0">
-              <div className="flex w-12 shrink-0 flex-col items-end">
-                <span className={cn('text-xs font-semibold tabular-nums', isNow ? 'text-brand' : 'text-dim')}>{n(b.time)}</span>
-              </div>
-              <div className="relative flex flex-col items-center">
-                <span className={cn('mt-1 size-2.5 rounded-full ring-4', isNow ? 'bg-brand ring-brand/20' : 'bg-line-strong ring-transparent')} />
-                <span className="mt-1 w-px flex-1 bg-line" />
-              </div>
-              <div className={cn('min-w-0 flex-1 rounded-xl px-3 py-2', isNow && 'bg-brand/10')}>
-                <p className={cn('text-sm font-semibold', isNow ? 'text-ink' : 'text-ink/90')}>
-                  {copy.title}
-                  {isNow && <span className="ms-2 text-[10px] font-bold tracking-wide text-brand uppercase">{m.routine.now}</span>}
-                </p>
-                <ul className="mt-0.5 space-y-0.5 text-xs text-mute">
-                  {copy.items.map((it) => (
-                    <li key={it}>• {it}</li>
-                  ))}
-                </ul>
-              </div>
-            </li>
-          )
-        })}
-      </ol>
-    </Card>
+
+      <Sheet open={open} onClose={() => setOpen(false)} title={m.routine.title}>
+        <ol className="relative pb-2">
+          {DAILY_SCHEDULE.map((b, i) => {
+            const isNow = i === current
+            const copy = m.schedule[b.id]
+            const BlockIcon = BLOCK_ICONS[b.id]
+            return (
+              <li key={b.id} className="relative flex gap-3 pb-3 last:pb-0">
+                <span className={cn('w-11 shrink-0 pt-2.5 text-end text-xs font-semibold tabular-nums', isNow ? 'text-brand' : 'text-dim')}>{n(b.time)}</span>
+                <div className="relative flex flex-col items-center">
+                  <span className={cn('mt-1.5 grid size-8 place-items-center rounded-full', isNow ? 'bg-brand text-bg' : 'bg-panel-2 text-mute')}>
+                    <BlockIcon className="size-4" aria-hidden />
+                  </span>
+                  <span className="mt-1 w-px flex-1 bg-line" />
+                </div>
+                <div className={cn('min-w-0 flex-1 rounded-xl px-3 py-2', isNow && 'bg-brand/10')}>
+                  <p className="text-sm font-semibold text-ink">{copy.title}</p>
+                  <ul className="mt-0.5 space-y-0.5 text-xs text-mute">
+                    {copy.items.map((it) => (
+                      <li key={it}>{it}</li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            )
+          })}
+        </ol>
+      </Sheet>
+    </>
   )
 }

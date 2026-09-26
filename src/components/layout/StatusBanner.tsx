@@ -1,10 +1,11 @@
-import { ShieldAlert, TriangleAlert, TrendingDown } from 'lucide-react'
+import { ShieldAlert, TriangleAlert } from 'lucide-react'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { useI18n } from '@/i18n'
 
 /**
- * App-wide banner for non-standard plan levels (visible across all tabs).
+ * App-wide safety banner for flare-up and medical-pause days (visible across all tabs).
  * `onToday` skips the medical-pause banner there, since Today shows the full pause screen.
+ * Reduced days need no banner: Today's check-in badge and the Exercises card say it.
  */
 export function StatusBanner({ onToday = false }: { onToday?: boolean }) {
   const level = useRecoveryStore((s) => s.daily_log.adapted_plan_level)
@@ -32,16 +33,6 @@ export function StatusBanner({ onToday = false }: { onToday?: boolean }) {
           <p className="font-semibold text-danger">{b.pauseTitle}</p>
           <p className="mt-0.5 text-ink/85">{b.pauseBody}</p>
         </div>
-      </div>
-    )
-  }
-  if (level === 'reduced') {
-    return (
-      <div className="mx-4 mt-3 flex animate-fade-in items-center gap-3 rounded-e-[14px] rounded-s-[4px] border-s-4 border-warning bg-well px-3 py-2.5 text-sm">
-        <TrendingDown className="size-4 shrink-0 text-warning" aria-hidden />
-        <p className="text-ink/85">
-          <span className="font-bold text-warning">{b.reducedLead}</span> {b.reducedBody}
-        </p>
       </div>
     )
   }

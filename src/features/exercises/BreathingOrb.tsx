@@ -52,7 +52,7 @@ export function BreathingOrb({ phase, remainingMs, durationMs, running }: { phas
         aria-hidden
       />
       <div className="relative text-center" aria-live="polite">
-        <span className={`block text-xs font-bold tracking-[0.2em] uppercase ${phase === 'rest' ? 'text-warning' : phase === 'idle' ? 'text-mute' : 'text-brand'}`}>{label}</span>
+        <span className={`block text-xs font-semibold ${phase === 'rest' ? 'text-warning' : phase === 'idle' ? 'text-mute' : 'text-brand'}`}>{label}</span>
         <span className="block text-5xl font-bold text-ink tabular-nums" dir="ltr">
           {n(fmt(remainingMs, long))}
         </span>

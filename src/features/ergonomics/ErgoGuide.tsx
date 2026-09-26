@@ -27,15 +27,13 @@ export function ErgoGuide() {
 
   return (
     <div className="space-y-5">
-      <p className="px-1 text-sm text-mute">{t.intro}</p>
-
       <MovementCard />
 
       <section>
         <SectionTitle
           title={t.habitsTitle(done, habits.length)}
           action={
-            <div className="flex overflow-hidden rounded-xl border border-line text-[11px] font-bold tracking-[0.06em] uppercase" role="tablist" aria-label={t.filter}>
+            <div className="flex overflow-hidden rounded-xl border border-line text-xs font-semibold" role="tablist" aria-label={t.filter}>
               {(['mine', 'all'] as const).map((f) => (
                 <button
                   key={f}
@@ -62,11 +60,6 @@ export function ErgoGuide() {
             />
           ))}
         </ul>
-        {filter === 'mine' && (
-          <button type="button" onClick={() => setFilter('all')} className="mt-3 w-full rounded-xl border border-dashed border-line-strong py-3 text-xs font-semibold text-brand hover:bg-panel">
-            {t.browse} <span className="inline-block rtl:-scale-x-100">→</span>
-          </button>
-        )}
       </section>
     </div>
   )

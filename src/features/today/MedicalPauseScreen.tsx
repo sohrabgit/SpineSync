@@ -32,7 +32,7 @@ export function MedicalPauseScreen({ flags, onEdit }: { flags: RedFlagId[]; onEd
         </ul>
       </div>
       <div className="mt-4 grid gap-2">
-        <a href="tel:112" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-danger bg-danger text-sm font-bold tracking-[0.04em] text-bg uppercase press active:scale-[0.97]">
+        <a href="tel:112" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-danger bg-danger text-sm font-semibold text-bg press active:scale-[0.97]">
           <PhoneCall className="size-4" /> {t.call}
         </a>
         <Button variant="ghost" onClick={onEdit}>

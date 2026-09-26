@@ -32,7 +32,7 @@ export function BottomNav({ active, onChange, badges }: { active: TabId; onChang
                     </span>
                   )}
                 </span>
-                <span className={cn('text-[10px] font-bold tracking-[0.1em] uppercase transition-colors', selected ? 'text-ink' : 'text-dim')}>{m.tabs[id]}</span>
+                <span className={cn('text-[11px] font-medium transition-colors', selected ? 'text-ink' : 'text-dim')}>{m.tabs[id]}</span>
               </button>
             </li>
           )

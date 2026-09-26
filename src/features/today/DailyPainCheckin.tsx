@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ChevronDown, ShieldAlert, Zap } from 'lucide-react'
+import { ChevronDown, Hand, ShieldAlert, Zap } from 'lucide-react'
 import type { PainCheckin, RedFlagId } from '@/types/recovery'
 import { RED_FLAGS } from '@/data/redFlags'
 import { decidePlanLevel, previousVas } from '@/lib/adaptive'
@@ -7,7 +7,7 @@ import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Toggle } from '@/components/ui/Toggle'
-import { LEVEL_TONE } from '@/components/ui/tone'
+import { LEVEL_ICON, LEVEL_TONE, TONE_STYLES } from '@/components/ui/tone'
 import { cn } from '@/components/ui/cn'
 import { useI18n } from '@/i18n'
 import { VasSlider } from './VasSlider'
@@ -35,6 +35,7 @@ export function DailyPainCheckin({ initial, onDone, onCancel }: Props) {
   const prevVas = useMemo(() => previousVas(history, logDate), [history, logDate])
   const checkin: PainCheckin = { vas_score: vas, radiating_pain: radiating, numbness_present: numbness, red_flags: flags }
   const preview = decidePlanLevel(checkin, prevVas)
+  const PreviewIcon = LEVEL_ICON[preview]
 
   const toggleFlag = (id: RedFlagId) => setFlags((fs) => (fs.includes(id) ? fs.filter((f) => f !== id) : [...fs, id]))
 
@@ -50,7 +51,7 @@ export function DailyPainCheckin({ initial, onDone, onCancel }: Props) {
       <VasSlider value={vas} onChange={setVas} />
       {prevVas !== null && (
         <p className="-mt-2 text-xs text-mute">
-          {t.lastCheckin} <span className="font-semibold text-ink">{n(prevVas)}/{n(10)}</span>
+          {t.lastCheckin} <span className="font-semibold text-ink">{n(prevVas)}</span>
           {vas !== prevVas && (
             <span className={vas > prevVas ? 'text-warning' : 'text-success'} dir="ltr">
               {' '}({vas > prevVas ? '+' : '−'}{n(Math.abs(vas - prevVas))})
@@ -60,18 +61,14 @@ export function DailyPainCheckin({ initial, onDone, onCancel }: Props) {
       )}
 
       <div className="divide-y divide-line rounded-xl border border-line bg-well">
-        <label className="flex items-center justify-between gap-3 p-3">
-          <span className="text-sm">
-            <span className="font-medium text-ink">{t.radiatingTitle}</span>
-            <span className="block text-xs text-mute">{t.radiatingHint}</span>
-          </span>
+        <label className="flex items-center gap-3 p-3">
+          <Zap className={cn('size-4 shrink-0', radiating ? 'text-danger' : 'text-dim')} aria-hidden />
+          <span className="flex-1 text-sm font-medium text-ink">{t.radiatingTitle}</span>
           <Toggle checked={radiating} onChange={setRadiating} label={t.radiatingLabel} tone="danger" />
         </label>
-        <label className="flex items-center justify-between gap-3 p-3">
-          <span className="text-sm">
-            <span className="font-medium text-ink">{t.numbTitle}</span>
-            <span className="block text-xs text-mute">{t.numbHint}</span>
-          </span>
+        <label className="flex items-center gap-3 p-3">
+          <Hand className={cn('size-4 shrink-0', numbness ? 'text-warning' : 'text-dim')} aria-hidden />
+          <span className="flex-1 text-sm font-medium text-ink">{t.numbTitle}</span>
           <Toggle checked={numbness} onChange={setNumbness} label={t.numbLabel} />
         </label>
       </div>
@@ -80,7 +77,7 @@ export function DailyPainCheckin({ initial, onDone, onCancel }: Props) {
         <button type="button" onClick={() => setFlagsOpen((o) => !o)} aria-expanded={flagsOpen} className="flex w-full items-center gap-2 p-3 text-start text-sm">
           <ShieldAlert className={cn('size-4', flags.length ? 'text-danger' : 'text-dim')} aria-hidden />
           <span className="flex-1 font-medium text-ink">{t.redFlags}</span>
-          {flags.length ? <Badge tone="critical">{t.reported(flags.length)}</Badge> : <span className="text-xs text-mute">{m.common.none}</span>}
+          {flags.length > 0 && <Badge tone="critical">{t.reported(flags.length)}</Badge>}
           <ChevronDown className={cn('size-4 text-dim transition-transform', flagsOpen && 'rotate-180')} aria-hidden />
         </button>
         {flagsOpen && (
@@ -97,12 +94,13 @@ export function DailyPainCheckin({ initial, onDone, onCancel }: Props) {
         )}
       </div>
 
-      <div key={preview} className="flex animate-fade-in items-center gap-2 rounded-xl bg-panel-2 p-3 text-xs text-mute">
-        <Zap className="size-4 shrink-0 text-brand" aria-hidden />
-        <span className="flex-1">
-          {t.planWillBe} <Badge tone={LEVEL_TONE[preview]}>{m.levels[preview].label}</Badge>
-        </span>
-      </div>
+      {/* Only worth a line when the check-in changes the plan. */}
+      {preview !== 'standard' && (
+        <div key={preview} className={cn('flex animate-fade-in items-center gap-2 rounded-xl border p-3 text-sm font-semibold', TONE_STYLES[LEVEL_TONE[preview]].bg, TONE_STYLES[LEVEL_TONE[preview]].border, TONE_STYLES[LEVEL_TONE[preview]].text)}>
+          <PreviewIcon className="size-4 shrink-0" aria-hidden />
+          {m.levels[preview].label}
+        </div>
+      )}
 
       <div className="flex gap-2">
         {onCancel && (

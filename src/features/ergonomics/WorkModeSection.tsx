@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Eye, Footprints, Laptop, Play, Square } from 'lucide-react'
+import { Eye, Footprints, Laptop, Play, Square, Timer } from 'lucide-react'
 import type { BreakInterval, WorkSession } from '@/types/recovery'
 import { eyeNudgeLeft, formatClock, MINUTE_MS, msUntilBreak, sessionMinutes, SNOOZE_MIN } from '@/lib/workMode'
 import { primeAudio } from '@/lib/cues'
@@ -24,6 +24,14 @@ export function WorkModeSection() {
   return session ? <ActiveSession session={session} /> : <StartSession />
 }
 
+/** Reminders need the app open; only iPhone Safari (not installed) needs telling to add it to the Home Screen first. */
+function needsInstallHint(): boolean {
+  if (typeof navigator === 'undefined') return false
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  const standalone = (navigator as Navigator & { standalone?: boolean }).standalone === true || window.matchMedia?.('(display-mode: standalone)').matches
+  return ios && !standalone
+}
+
 function StartSession() {
   const prefs = useRecoveryStore((s) => s.preferences)
   const startWork = useRecoveryStore((s) => s.startWork)
@@ -40,21 +48,16 @@ function StartSession() {
 
   return (
     <div>
-      <div className="flex items-start gap-3">
-        <span className="knob grid size-10 shrink-0 place-items-center bg-info text-bg">
-          <Laptop className="size-5" strokeWidth={2.2} aria-hidden />
-        </span>
-        <div className="min-w-0">
-          <h2 className="text-sm font-semibold text-ink">{t.title}</h2>
-          <p className="text-xs text-mute">{t.intro}</p>
-        </div>
-      </div>
-
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <p id="work-interval" className="text-xs font-semibold text-ink">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 text-sm font-semibold whitespace-nowrap text-ink">
+          <Laptop className="size-4 text-info" aria-hidden />
+          {t.title}
+        </h2>
+        <p id="work-interval" className="sr-only">
           {t.every}
         </p>
-        <div role="radiogroup" aria-labelledby="work-interval" className="flex overflow-hidden rounded-xl border border-line text-xs font-bold">
+        <div role="radiogroup" aria-labelledby="work-interval" className="flex items-center overflow-hidden rounded-xl border border-line text-xs font-bold">
+          <Timer className="mx-2 size-3.5 text-dim" aria-hidden />
           {INTERVALS.map((min) => (
             <button
               key={min}
@@ -62,19 +65,20 @@ function StartSession() {
               role="radio"
               aria-checked={choice === min}
               onClick={() => setChoice(min)}
-              className={cn('min-h-9 px-3 tabular-nums transition', choice === min ? 'bg-ink text-bg' : 'text-mute hover:text-ink')}
+              aria-label={t.minutes(n(min))}
+              className={cn('min-h-9 min-w-11 px-2.5 tabular-nums transition', choice === min ? 'bg-ink text-bg' : 'text-mute hover:text-ink')}
             >
-              {t.minutes(n(min))}
+              {n(min)}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold text-ink">{t.eyeNudges}</p>
-          <p className="text-[11px] text-mute">{t.eyeNudgesHint}</p>
-        </div>
+      <div className="mt-3 flex items-center gap-2">
+        <Eye className={cn('size-4 shrink-0', eye ? 'text-info' : 'text-dim')} aria-hidden />
+        <p className="flex-1 text-xs font-semibold text-ink" title={t.eyeNudgesHint}>
+          {t.eyeNudges}
+        </p>
         <Toggle checked={eye} onChange={setEye} label={t.eyeNudges} />
       </div>
 
@@ -82,7 +86,7 @@ function StartSession() {
         <Play className="size-4" aria-hidden />
         {t.start}
       </Button>
-      <p className="mt-2 text-[11px] text-dim">{t.caveat}</p>
+      {needsInstallHint() && <p className="mt-2 text-[11px] text-dim">{t.caveat}</p>}
     </div>
   )
 }
@@ -108,11 +112,17 @@ function ActiveSession({ session }: { session: WorkSession }) {
           <span className={cn('text-base font-bold tabular-nums', due ? 'text-info' : 'text-ink')}>{due ? `+${clock}` : clock}</span>
         </ProgressRing>
         <div className="min-w-0 flex-1">
-          <p className="cap text-[11px] text-mute">{t.title}</p>
           <p className={cn('text-sm font-semibold', due ? 'text-info' : 'text-ink')}>{due ? t.timeToMove : t.nextBreak}</p>
-          {due && <p className="text-xs text-mute">{t.overdueBy(clock)}</p>}
-          <p className="mt-1 text-xs text-mute">{t.workingFor(t.duration(Math.floor(minutes / 60), minutes % 60))}</p>
-          <p className="text-xs text-mute">{t.sessionBreaks(n(session.breaks))}</p>
+          <p className="mt-1 flex items-center gap-3 text-xs text-mute tabular-nums">
+            <span className="inline-flex items-center gap-1" title={t.workingFor(t.duration(Math.floor(minutes / 60), minutes % 60))}>
+              <Laptop className="size-3.5" aria-hidden />
+              {n(t.duration(Math.floor(minutes / 60), minutes % 60))}
+            </span>
+            <span className="inline-flex items-center gap-1" title={t.sessionBreaks(n(session.breaks))}>
+              <Footprints className="size-3.5" aria-hidden />
+              {n(session.breaks)}
+            </span>
+          </p>
         </div>
       </div>
 

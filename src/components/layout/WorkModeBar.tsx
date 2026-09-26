@@ -1,4 +1,4 @@
-import { Eye, Laptop } from 'lucide-react'
+import { Eye, Timer } from 'lucide-react'
 import { eyeNudgeLeft, formatClock, msUntilBreak } from '@/lib/workMode'
 import { useNow } from '@/hooks/useNow'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
@@ -27,23 +27,23 @@ export function WorkModeBar({ hidden }: { hidden: boolean }) {
           due ? 'border-info/60 bg-info/15' : 'border-line bg-panel/90',
         )}
       >
-        {eyeLeft > 0 ? <Eye className="size-4 shrink-0 text-info" aria-hidden /> : <Laptop className={cn('size-4 shrink-0', due ? 'text-info' : 'text-mute')} aria-hidden />}
+        {eyeLeft > 0 ? <Eye className="size-4 shrink-0 text-info" aria-hidden /> : <Timer className={cn('size-4 shrink-0', due ? 'text-info' : 'text-mute')} aria-hidden />}
         <p className="min-w-0 flex-1 truncate">
           {eyeLeft > 0 ? (
             <span className="font-semibold text-info">{t.eyeNow}</span>
           ) : due ? (
             <span className="font-semibold text-info">{t.timeToMove}</span>
           ) : (
-            <>
-              <span className="font-semibold text-ink">{t.title}</span> <span className="text-mute tabular-nums">· {t.barIn(n(formatClock(left)))}</span>
-            </>
+            <span className="font-semibold text-ink tabular-nums" aria-label={t.countdownAria(n(formatClock(left)))}>
+              {n(formatClock(left))}
+            </span>
           )}
         </p>
         {eyeLeft > 0 && <span className="shrink-0 text-xs text-info tabular-nums">{t.eyeLeft(n(Math.ceil(eyeLeft / 1000)))}</span>}
         <button
           type="button"
           onClick={showBreak}
-          className={cn('min-h-8 shrink-0 rounded-lg px-2.5 text-[11px] font-bold tracking-[0.06em] uppercase transition', due ? 'bg-info text-bg' : 'text-brand hover:bg-panel-2')}
+          className={cn('min-h-8 shrink-0 rounded-lg px-2.5 text-xs font-semibold transition', due ? 'bg-info text-bg' : 'text-brand hover:bg-panel-2')}
         >
           {m.workMode.takeBreak}
         </button>
