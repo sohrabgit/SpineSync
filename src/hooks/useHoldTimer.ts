@@ -55,9 +55,13 @@ export function useHoldTimer({ holdSeconds, restSeconds, onHoldComplete, onHoldS
     if (phaseRef.current === 'idle') setRemainingMs(holdMs)
   }, [holdMs])
 
+  // Two drivers share one idempotent tick: requestAnimationFrame keeps the ring
+  // smooth while visible, and the interval keeps phases advancing in background
+  // tabs (where rAF is paused). A phase change moves endAt forward, so whichever
+  // driver fires second just sees time left and redraws.
   useEffect(() => {
     if (!running) return
-    const id = window.setInterval(() => {
+    const tick = () => {
       const left = endAt.current - Date.now()
       if (left > 0) {
         setRemainingMs(left)
@@ -75,8 +79,16 @@ export function useHoldTimer({ holdSeconds, restSeconds, onHoldComplete, onHoldS
       } else if (phaseRef.current === 'rest') {
         enter('hold', holdMs)
       }
-    }, TICK_MS)
-    return () => window.clearInterval(id)
+    }
+    const id = window.setInterval(tick, TICK_MS)
+    let frame = requestAnimationFrame(function loop() {
+      tick()
+      frame = requestAnimationFrame(loop)
+    })
+    return () => {
+      window.clearInterval(id)
+      cancelAnimationFrame(frame)
+    }
   }, [running, holdMs, restMs, enter])
 
   const start = useCallback(() => {

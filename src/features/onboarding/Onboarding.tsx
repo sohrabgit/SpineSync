@@ -152,7 +152,7 @@ export function Onboarding() {
                           </span>
                         )}
                       </span>
-                      <span className={cn('text-[10px] leading-tight font-bold tracking-[0.06em] uppercase', on ? 'text-ink' : 'text-dim')}>{m.ergoCategories[c.id].name}</span>
+                      <span className={cn('text-[11px] leading-tight font-medium', on ? 'text-ink' : 'text-dim')}>{m.ergoCategories[c.id].name}</span>
                     </button>
                   )
                 })}

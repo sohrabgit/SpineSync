@@ -1,11 +1,10 @@
 import { Check, ChevronDown } from 'lucide-react'
 import type { ErgoCategory } from '@/types/recovery'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
-import { Badge } from '@/components/ui/Badge'
 import { Toggle } from '@/components/ui/Toggle'
 import { cn } from '@/components/ui/cn'
 import { useI18n } from '@/i18n'
-import { CATEGORY_ICONS } from './categoryIcons'
+import { CATEGORY_ICONS, TASK_ICONS } from './categoryIcons'
 
 interface Props {
   category: ErgoCategory
@@ -31,13 +30,7 @@ export function ErgoCategoryCard({ category, active, expanded, onExpand }: Props
         <span className={cn('knob grid size-11 shrink-0 place-items-center transition-colors', !active ? 'bg-panel-2 text-dim' : allDone ? 'bg-success text-bg' : 'bg-brand text-bg')}>
           <Icon className="size-5" strokeWidth={2.2} aria-hidden />
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-2">
-            <span className="truncate text-sm font-semibold text-ink">{copy.name}</span>
-            {category.core && <Badge tone="neutral">{ui.core}</Badge>}
-          </span>
-          <span className="block truncate text-xs text-mute">{copy.blurb}</span>
-        </span>
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">{copy.name}</span>
         {active ? (
           <span className={cn('text-xs font-semibold tabular-nums', allDone ? 'text-success' : 'text-mute')}>
             {n(done)}/{n(category.tasks.length)}
@@ -52,9 +45,7 @@ export function ErgoCategoryCard({ category, active, expanded, onExpand }: Props
         <div className="animate-fade-in border-t border-line/70 px-3 pt-2 pb-3">
           {!category.core && (
             <label className="mb-2 flex items-center justify-between gap-3 rounded-xl bg-panel-2 px-3 py-2">
-              <span className="text-xs text-mute">
-                <span className="font-semibold text-ink">{ui.partOfDay}</span> {ui.partOfDayHint}
-              </span>
+              <span className="text-xs font-semibold text-ink">{ui.partOfDay}</span>
               <Toggle checked={active} onChange={() => toggleCategory(category.id)} label={ui.include(copy.name)} />
             </label>
           )}
@@ -62,10 +53,11 @@ export function ErgoCategoryCard({ category, active, expanded, onExpand }: Props
             {category.tasks.map((t) => {
               const checked = checklist[t.id] === true
               const task = m.ergoTasks[t.id]
+              const TaskIcon = TASK_ICONS[t.id] ?? Icon
               if (!active) {
                 return (
                   <li key={t.id} className="flex gap-3 px-2 py-2 text-sm text-mute">
-                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-dim" aria-hidden />
+                    <TaskIcon className="mt-0.5 size-4 shrink-0 text-dim" aria-hidden />
                     <span>
                       {task?.label}
                       {task?.detail && <span className="block text-xs text-dim">{task.detail}</span>}
@@ -82,18 +74,16 @@ export function ErgoCategoryCard({ category, active, expanded, onExpand }: Props
                     onClick={() => toggleTask(t.id)}
                     className="flex min-h-12 w-full items-center gap-3 rounded-xl px-2 py-2 text-start transition hover:bg-panel-2 active:bg-panel-2"
                   >
+                    {/* The habit's glyph doubles as its checkbox: it turns into a check when done. */}
                     <span
                       className={cn(
-                        'grid size-6 shrink-0 place-items-center rounded-md border-2 transition-all duration-200',
-                        checked ? 'border-brand bg-brand text-bg' : 'border-line-strong text-transparent',
+                        'grid size-9 shrink-0 place-items-center rounded-xl transition-all duration-200',
+                        checked ? 'bg-brand text-bg' : 'border border-line-strong bg-panel-2 text-mute',
                       )}
                     >
-                      <Check className="size-3.5" strokeWidth={3} />
+                      {checked ? <Check className="size-4 animate-pop" strokeWidth={3} /> : <TaskIcon className="size-4" />}
                     </span>
-                    <span className="text-sm">
-                      <span className={cn('transition-colors', checked ? 'text-dim line-through' : 'text-ink')}>{task?.label}</span>
-                      {task?.detail && <span className="block text-xs text-dim">{task.detail}</span>}
-                    </span>
+                    <span className={cn('text-sm transition-colors', checked ? 'text-dim line-through' : 'text-ink')}>{task?.label}</span>
                   </button>
                 </li>
               )

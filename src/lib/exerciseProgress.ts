@@ -36,3 +36,14 @@ export function progressFraction(p: ExerciseProgress): number {
   const total = p.target_sets * p.target_reps
   return total === 0 ? 0 : (p.sets_done * p.target_reps + p.reps_done) / total
 }
+
+const isOpen = (p: ExerciseProgress) => p.status === 'pending' || p.status === 'in_progress'
+
+/**
+ * The exercise a guided routine should open next: the first unfinished one after
+ * `afterId` in plan order, wrapping around to earlier ones. Never returns `afterId` itself.
+ */
+export function nextOpenExercise(list: ExerciseProgress[], afterId?: ExerciseProgress['exercise_id']): ExerciseProgress | undefined {
+  const start = afterId ? list.findIndex((e) => e.exercise_id === afterId) + 1 : 0
+  return [...list.slice(start), ...list.slice(0, start)].find((e) => isOpen(e) && e.exercise_id !== afterId)
+}

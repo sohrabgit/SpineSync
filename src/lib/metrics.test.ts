@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { breakPainLink, checkinStreak, dailyCompliance, ndiBand, ndiScore, painDelta, postureSlip, scheduledErgoTasks, workBreakStats } from './metrics'
-import { completeSet, logRep, markComplete } from './exerciseProgress'
+import { completeSet, logRep, markComplete, nextOpenExercise } from './exerciseProgress'
 import { buildPlan, toProgress } from './adaptive'
 import { makeLog } from './testUtils'
 
@@ -119,5 +119,26 @@ describe('breakPainLink', () => {
   })
   it('needs at least 3 days in each group', () => {
     expect(breakPainLink([withBreaks(1, 4, 3), withBreaks(2, 2, 0), withBreaks(3, 5, 0)])).toBeNull()
+  })
+})
+
+describe('nextOpenExercise', () => {
+  const plan = () => buildPlan('standard', 1).map(toProgress)
+  it('starts at the first unfinished exercise', () => {
+    const list = plan()
+    list[0] = markComplete(list[0]!)
+    expect(nextOpenExercise(list)?.exercise_id).toBe(list[1]!.exercise_id)
+  })
+  it('moves forward and wraps to skipped-over earlier ones', () => {
+    const list = plan()
+    expect(nextOpenExercise(list, list[1]!.exercise_id)?.exercise_id).toBe(list[2]!.exercise_id)
+    const last = list.at(-1)!.exercise_id
+    expect(nextOpenExercise(list, last)?.exercise_id).toBe(list[0]!.exercise_id)
+  })
+  it('returns undefined when everything else is done or skipped', () => {
+    const list = plan().map(markComplete)
+    list[1] = { ...list[1]!, status: 'pending' }
+    expect(nextOpenExercise(list, list[1]!.exercise_id)).toBeUndefined()
+    expect(nextOpenExercise(list)?.exercise_id).toBe(list[1]!.exercise_id)
   })
 })

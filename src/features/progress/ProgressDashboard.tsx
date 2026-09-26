@@ -1,14 +1,14 @@
 import { useMemo } from 'react'
-import { ChartLine, Flame, Target, TrendingDown, TrendingUp } from 'lucide-react'
+import { ChartSpline, Flame, TrendingDown, TrendingUp, type LucideIcon } from 'lucide-react'
 import type { PlanLevel } from '@/types/recovery'
 import { averageAdherence, checkinStreak, flareDayCount, painDelta } from '@/lib/metrics'
 import { PROGRAM_DAYS } from '@/lib/program'
-import { FLARE_VAS_THRESHOLD } from '@/lib/adaptive'
 import { useRecoveryStore } from '@/store/useRecoveryStore'
 import { Card } from '@/components/ui/Card'
+import { ProgressRing } from '@/components/ui/ProgressRing'
+import { cn } from '@/components/ui/cn'
 import { useI18n } from '@/i18n'
 import { AdherenceChart } from './AdherenceChart'
-import { CHART } from './chartTheme'
 import { NdiSummary } from './NdiSummary'
 import { PainTrendChart } from './PainTrendChart'
 import { StatTile } from './StatTile'
@@ -51,65 +51,64 @@ export function ProgressDashboard() {
   const flares = flareDayCount(logs)
   const maxDay = Math.max(PROGRAM_DAYS, currentDay)
   const checkins = points.filter((p) => p.vas !== null).length
+  // Last 7 program days, oldest first: filled when a check-in was logged.
+  const week = Array.from({ length: 7 }, (_, i) => currentDay - 6 + i).map((d) => ({ day: d, logged: points.some((p) => p.day === d && p.vas !== null) }))
+  const improving = delta !== null && delta.delta > 0
+  const worsening = delta !== null && delta.delta < 0
 
   return (
     <div className="space-y-5">
-      <div className="px-1">
-        <h1 className="text-xl font-bold tracking-tight text-ink">{t.title}</h1>
-        <p className="text-sm text-mute">{t.summary(checkins, Math.min(currentDay, maxDay))}</p>
-      </div>
-
       <div className="grid grid-cols-2 gap-3">
         <StatTile
           label={t.painDelta}
-          icon={delta && delta.delta < 0 ? TrendingUp : TrendingDown}
-          iconClass={delta && delta.delta < 0 ? 'bg-warning text-bg' : 'bg-success text-bg'}
-          value={delta ? `${delta.delta > 0 ? '−' : delta.delta < 0 ? '+' : ''}${n(Math.abs(delta.delta))}` : '—'}
-          hint={delta ? t.painDeltaHint(delta.baseline, delta.recent, delta.window) : t.needsTwo}
+          value={delta ? `${improving ? '−' : worsening ? '+' : ''}${n(Math.abs(delta.delta))}` : '—'}
+          valueClass={improving ? 'text-success' : worsening ? 'text-warning' : 'text-ink'}
+          visual={
+            delta && (improving || worsening) ? (
+              (() => {
+                const Arrow = improving ? TrendingDown : TrendingUp
+                return <Arrow className={cn('size-7', improving ? 'text-success' : 'text-warning')} strokeWidth={2.4} aria-hidden />
+              })()
+            ) : undefined
+          }
         />
-        <StatTile label={t.avgAdherence} icon={Target} value={avgAdherence !== null ? n(`${Math.round(avgAdherence)}%`) : '—'} hint={t.adherenceHint} />
-        <StatTile label={t.streak} icon={ChartLine} value={t.streakValue(streak)} hint={t.streakHint} />
-        <StatTile label={t.flareDays} icon={Flame} iconClass="bg-danger text-bg" value={n(flares)} hint={flares ? t.flareHint : t.noneYet} />
+        <StatTile
+          label={t.avgAdherence}
+          value={avgAdherence !== null ? n(`${Math.round(avgAdherence)}%`) : '—'}
+          visual={<ProgressRing value={(avgAdherence ?? 0) / 100} size={34} stroke={5} />}
+        />
+        <StatTile
+          label={t.streak}
+          value={n(streak)}
+          visual={
+            <span className="flex gap-1" role="img" aria-label={t.streakValue(streak)}>
+              {week.map((d) => (
+                <span key={d.day} className={cn('size-2 rounded-full', d.logged ? 'bg-brand' : 'bg-panel-2')} />
+              ))}
+            </span>
+          }
+        />
+        <StatTile
+          label={t.flareDays}
+          value={n(flares)}
+          visual={<Flame className={cn('size-6', flares ? 'text-danger' : 'text-dim/50')} aria-hidden />}
+        />
       </div>
 
       <Card>
-        <div className="mb-2 flex items-start justify-between gap-2">
-          <div>
-            <h2 className="text-sm font-semibold text-ink">{t.painTrend}</h2>
-            <p className="text-xs text-mute">{t.painTrendHint}</p>
-          </div>
-        </div>
-        {checkins === 0 ? (
-          <EmptyChart text={t.painEmpty} />
-        ) : (
-          <>
-            <PainTrendChart data={points} maxDay={maxDay} />
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-mute">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="size-2 rounded-full" style={{ backgroundColor: CHART.series }} /> {t.dailyPain}
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="size-2 rounded-full" style={{ backgroundColor: CHART.critical }} /> {t.flareDot}
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="h-px w-3" style={{ backgroundColor: CHART.critical }} /> {t.thresholdN(FLARE_VAS_THRESHOLD)}
-              </span>
-            </div>
-          </>
-        )}
+        <h2 className="mb-2 text-sm font-semibold text-ink">{t.painTrend}</h2>
+        {checkins === 0 ? <EmptyChart icon={ChartSpline} text={t.painEmpty} /> : <PainTrendChart data={points} maxDay={maxDay} />}
       </Card>
 
       <Card>
-        <h2 className="text-sm font-semibold text-ink">{t.adherenceTitle}</h2>
-        <p className="mb-2 text-xs text-mute">{t.adherenceFormula}</p>
-        {points.every((p) => p.adherence === null) ? <EmptyChart text={t.adherenceEmpty} /> : <AdherenceChart data={points} maxDay={maxDay} />}
+        <h2 className="mb-2 text-sm font-semibold text-ink">{t.adherenceTitle}</h2>
+        {points.every((p) => p.adherence === null) ? <EmptyChart icon={ChartSpline} text={t.adherenceEmpty} /> : <AdherenceChart data={points} maxDay={maxDay} />}
       </Card>
 
       <WorkBreaksCard logs={logs} />
 
       <Card>
-        <h2 className="text-sm font-semibold text-ink">{t.ndiTitle}</h2>
-        <p className="mb-3 text-xs text-mute">{t.ndiHint}</p>
+        <h2 className="mb-3 text-sm font-semibold text-ink">{t.ndiTitle}</h2>
         <NdiSummary assessments={assessments} />
       </Card>
 
@@ -150,6 +149,11 @@ export function ProgressDashboard() {
   )
 }
 
-function EmptyChart({ text }: { text: string }) {
-  return <div className="grid h-32 place-items-center rounded-xl border border-dashed border-line bg-well px-6 text-center text-xs text-mute">{text}</div>
+function EmptyChart({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
+  return (
+    <div className="flex h-28 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-well px-6 text-center text-xs text-mute">
+      <Icon className="size-6 text-dim" aria-hidden />
+      {text}
+    </div>
+  )
 }

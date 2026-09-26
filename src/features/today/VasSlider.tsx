@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import { vasColor } from '@/components/ui/tone'
+import { PainFace } from '@/components/ui/PainFace'
 import { vasBand } from '@/lib/metrics'
 import { useI18n } from '@/i18n'
 
@@ -10,19 +11,20 @@ export function VasSlider({ value, onChange }: { value: number; onChange: (v: nu
   const label = m.vas[vasBand(value)]
   return (
     <div>
-      <div className="flex items-end justify-between">
+      <div className="flex items-center justify-between gap-3">
         <label htmlFor={id} className="text-sm font-semibold text-ink">
           {m.checkin.painNow}
-          <span className="block text-xs font-normal text-mute">{m.checkin.scale}</span>
         </label>
-        <div className="text-end" aria-hidden>
-          <span className="text-4xl font-bold tabular-nums transition-colors duration-200" style={{ color }}>
-            {n(value)}
-          </span>
-          <span className="text-sm text-dim">/{n(10)}</span>
-          <p className="text-xs font-semibold transition-colors" style={{ color }}>
-            {label}
-          </p>
+        <div className="flex items-center gap-2.5" aria-hidden>
+          <PainFace vas={value} size={42} />
+          <div className="text-end leading-none">
+            <span className="text-4xl font-bold tabular-nums transition-colors duration-200" style={{ color }}>
+              {n(value)}
+            </span>
+            <p className="mt-1 text-xs font-semibold transition-colors" style={{ color }}>
+              {label}
+            </p>
+          </div>
         </div>
       </div>
       <input
@@ -34,15 +36,12 @@ export function VasSlider({ value, onChange }: { value: number; onChange: (v: nu
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         aria-valuetext={m.checkin.valueText(value, label)}
-        className="vas-range mt-4"
+        className="vas-range mt-3"
         style={{ ['--thumb' as string]: color }}
       />
-      <div className="mt-1.5 flex justify-between px-[6px] text-[10px] font-medium text-dim tabular-nums" aria-hidden>
-        {Array.from({ length: 11 }, (_, i) => (
-          <span key={i} className={i === value ? 'font-bold text-ink' : undefined}>
-            {n(i)}
-          </span>
-        ))}
+      <div className="mt-1.5 flex justify-between px-[6px] text-[11px] font-medium text-dim tabular-nums" aria-hidden>
+        <span>{n(0)}</span>
+        <span>{n(10)}</span>
       </div>
     </div>
   )
