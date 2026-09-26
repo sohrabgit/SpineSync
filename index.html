@@ -25,7 +25,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 18px;
+        gap: 20px;
         background: #0e1015;
         transition: opacity 300ms ease-out;
       }
@@ -33,61 +33,233 @@
         opacity: 0;
         pointer-events: none;
       }
-      #splash svg {
-        width: 88px;
-        height: 88px;
-        animation: splash-breathe 2.4s ease-in-out 700ms infinite;
+      /* Halo rings match the onboarding welcome slide (IntroVisuals.tsx). */
+      #splash .art {
+        position: relative;
+        display: grid;
+        place-items: center;
+        --size: min(46vw, 28vh, 200px);
+        width: var(--size);
+        height: var(--size);
+        /* Room for the outer halo, which overhangs the box by 9%. */
+        margin: calc(var(--size) * 0.09) 0;
       }
-      #splash .v {
+      #splash .halo {
+        position: absolute;
+        border-radius: 9999px;
+        opacity: 0;
+        animation: splash-fade 800ms ease-out 200ms forwards;
+      }
+      #splash .halo-outer {
+        width: 118%;
+        height: 118%;
+        border: 1px solid rgb(92 200 176 / 0.1);
+        animation: splash-fade 800ms ease-out 200ms forwards, splash-pulse 2.4s ease-in-out 1s infinite;
+      }
+      #splash .halo-inner {
+        width: 91%;
+        height: 91%;
+        border: 1px solid rgb(92 200 176 / 0.15);
+      }
+      #splash .halo-glow {
+        width: 64%;
+        height: 64%;
+        background: rgb(92 200 176 / 0.1);
+        filter: blur(24px);
+      }
+      #splash svg {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        opacity: 0;
+        animation: splash-fade 500ms ease-out forwards;
+      }
+      #splash .ring {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: splash-ring 1.2s ease-out infinite;
+      }
+      #splash .ring + .ring { animation-delay: 600ms; }
+      #splash .calm {
         opacity: 0;
         transform-box: fill-box;
         transform-origin: center;
-        animation: splash-rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
       }
-      #splash .v:nth-child(4) { animation-delay: 60ms; }
-      #splash .v:nth-child(3) { animation-delay: 140ms; }
-      #splash .v:nth-child(2) { animation-delay: 220ms; }
-      #splash .v:nth-child(1) { animation-delay: 300ms; }
+      #splash .calm.on { animation: splash-calm 1.4s ease-out forwards; }
       #splash p {
         margin: 0;
-        font: 700 22px/1 "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font: 700 24px/1 "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         letter-spacing: -0.01em;
         color: #eceef3;
         opacity: 0;
-        animation: splash-fade 400ms ease-out 380ms forwards;
-      }
-      @keyframes splash-rise {
-        from { opacity: 0; transform: translateY(8px) scale(0.9); }
-        to { opacity: var(--o, 1); transform: none; }
+        animation: splash-fade 600ms ease-out 3300ms forwards;
       }
       @keyframes splash-fade {
         to { opacity: 1; }
       }
-      @keyframes splash-breathe {
-        0%, 100% { transform: none; }
-        50% { transform: scale(1.04); }
+      @keyframes splash-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.55; }
+      }
+      @keyframes splash-ring {
+        from { opacity: 0.9; transform: scale(0.25); }
+        to { opacity: 0; transform: none; }
+      }
+      @keyframes splash-calm {
+        0% { opacity: 0; transform: scale(0.6); }
+        40% { opacity: 1; }
+        100% { opacity: 0.7; transform: none; }
       }
       @media (prefers-reduced-motion: reduce) {
-        #splash svg, #splash .v, #splash p {
+        #splash svg, #splash p, #splash .halo {
           animation: none;
-          opacity: var(--o, 1);
+          opacity: 1;
         }
       }
     </style>
   </head>
   <body>
     <div id="splash" aria-hidden="true">
-      <svg viewBox="0 0 64 64">
-        <rect width="64" height="64" rx="16" fill="#171a22" />
-        <g fill="#5cc8b0">
-          <rect class="v" style="--o: 0.55" x="24" y="10" width="16" height="8" rx="4" />
-          <rect class="v" style="--o: 0.7" x="23" y="21" width="18" height="8" rx="4" />
-          <rect class="v" style="--o: 0.85" x="22" y="32" width="20" height="8" rx="4" />
-          <rect class="v" x="21" y="43" width="22" height="9" rx="4.5" />
-        </g>
-      </svg>
+      <div class="art">
+        <span class="halo halo-outer"></span>
+        <span class="halo halo-inner"></span>
+        <span class="halo halo-glow"></span>
+        <svg viewBox="0 0 64 64">
+          <defs>
+            <radialGradient id="splash-pain">
+              <stop offset="0" stop-color="#f2706b" stop-opacity="0.6" />
+              <stop offset="1" stop-color="#f2706b" stop-opacity="0" />
+            </radialGradient>
+            <radialGradient id="splash-calm">
+              <stop offset="0" stop-color="#5cc8b0" stop-opacity="0.22" />
+              <stop offset="1" stop-color="#5cc8b0" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <ellipse class="calm" cx="31" cy="33" rx="22" ry="28" fill="url(#splash-calm)" />
+          <g id="splash-pain-g">
+            <circle r="11" fill="url(#splash-pain)" />
+            <circle class="ring" r="8" fill="none" stroke="#f2706b" stroke-width="0.7" />
+            <circle class="ring" r="8" fill="none" stroke="#f2706b" stroke-width="0.7" />
+          </g>
+          <g id="splash-spine"></g>
+        </svg>
+      </div>
       <p>SpineSync</p>
     </div>
+    <script>
+      /*
+       * Launch splash: the neck's spine starts bent forward with a bulging, painful
+       * disc, then a correction wave climbs from the base into a healthy curve.
+       * Plain-JS copy of src/lib/spine.ts (this runs before the bundle) — keep in sync.
+       */
+      (function () {
+        var W = [7.2, 7.8, 8.4, 9, 9.6], N = W.length, L = N - 1, PITCH = 8.6, BH = 5.6, BASE = [33.8, 48.9]
+        var BAD = [24, 4.8], GOOD = [20, -9.9], BAD_SHIFT = [-7.7, -2.6], PAIN = 2, RAD = Math.PI / 180
+        var HOLD = 1300, DUR = 1300, STAGGER = 170
+        var NS = 'http://www.w3.org/2000/svg'
+        function lerp(a, b, t) { return a + (b - a) * t }
+        function f(n) { return Math.round(n * 100) / 100 }
+        function rot(p, th, x, y) {
+          var c = Math.cos(th * RAD), s = Math.sin(th * RAD)
+          return [p[0] + x * c - y * s, p[1] + x * s + y * c]
+        }
+        function pose(ts) {
+          var p = [], th = []
+          th[L] = lerp(BAD[0], GOOD[0], ts[L]); p[L] = BASE
+          for (var j = L - 1; j >= 0; j--) {
+            th[j] = th[j + 1] + lerp(BAD[1], GOOD[1], ts[j])
+            var m = (th[j] + th[j + 1]) / 2
+            p[j] = [p[j + 1][0] + PITCH * Math.sin(m * RAD), p[j + 1][1] - PITCH * Math.cos(m * RAD)]
+          }
+          var bad = 1
+          for (j = 0; j < N; j++) bad -= ts[j] / N
+          for (j = 0; j < N; j++) p[j] = [p[j][0] + BAD_SHIFT[0] * bad, p[j][1] + BAD_SHIFT[1] * bad]
+          return { p: p, th: th }
+        }
+        function body(w) {
+          var x = -w / 2, h = BH / 2, c = 1.7
+          return 'M' + f(x + c) + ' ' + -h + 'H' + f(-x - c) + 'Q' + f(-x) + ' ' + -h + ' ' + f(-x) + ' ' + f(-h + c) + 'V' + f(h - c) +
+            'Q' + f(-x) + ' ' + h + ' ' + f(-x - c) + ' ' + h + 'H' + f(x + c) + 'Q' + f(x) + ' ' + h + ' ' + f(x) + ' ' + f(h - c) +
+            'V' + f(-h + c) + 'Q' + f(x) + ' ' + -h + ' ' + f(x + c) + ' ' + -h + 'Z'
+        }
+        function spinous(w) {
+          var x = -w / 2, k = BH / 4.6
+          function n(v) { return f(v * k) }
+          return 'M' + f(x + 0.8) + ' ' + n(-1.5) + 'L' + f(x - n(4)) + ' ' + n(1) + 'Q' + f(x - n(5.2)) + ' ' + n(1.9) + ' ' +
+            f(x - n(4.1)) + ' ' + n(2.7) + 'L' + f(x + 0.8) + ' ' + n(1.5) + 'Z'
+        }
+        function disc(ps, j, bulge) {
+          var a = ps.p[j], b = ps.p[j + 1], ta = ps.th[j], tb = ps.th[j + 1]
+          var wa = W[j] / 2 - 0.5, wb = W[j + 1] / 2 - 0.5
+          var ap = rot(a, ta, -wa, BH / 2 - 0.2), aa = rot(a, ta, wa, BH / 2 - 0.2)
+          var bp = rot(b, tb, -wb, -BH / 2 + 0.2), ba = rot(b, tb, wb, -BH / 2 + 0.2)
+          var out = rot([0, 0], (ta + tb) / 2, -1, 0)
+          var back = [(ap[0] + bp[0]) / 2, (ap[1] + bp[1]) / 2], front = [(aa[0] + ba[0]) / 2, (aa[1] + ba[1]) / 2]
+          var push = 0.6 + bulge * 4.4, cp = [back[0] + out[0] * push, back[1] + out[1] * push]
+          var cf = [front[0] - out[0] * 0.6, front[1] - out[1] * 0.6]
+          return {
+            d: 'M' + f(bp[0]) + ' ' + f(bp[1]) + 'Q' + f(cp[0]) + ' ' + f(cp[1]) + ' ' + f(ap[0]) + ' ' + f(ap[1]) +
+              'L' + f(aa[0]) + ' ' + f(aa[1]) + 'Q' + f(cf[0]) + ' ' + f(cf[1]) + ' ' + f(ba[0]) + ' ' + f(ba[1]) + 'Z',
+            tip: [back[0] + out[0] * (0.6 + bulge * 3), back[1] + out[1] * (0.6 + bulge * 3)]
+          }
+        }
+        function color(t, pain) {
+          var a = pain ? [2, 84, 68] : [26, 85, 68], b = [167, 50, 57]
+          return 'hsl(' + f(lerp(a[0], b[0], t)) + ' ' + f(lerp(a[1], b[1], t)) + '% ' + f(lerp(a[2], b[2], t)) + '%)'
+        }
+        function ease(x) {
+          x = Math.min(1, Math.max(0, x))
+          return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
+        }
+        function el(tag, parent) { var e = document.createElementNS(NS, tag); parent.appendChild(e); return e }
+
+        var root = document.getElementById('splash-spine'), painG = document.getElementById('splash-pain-g')
+        var discs = [], verts = []
+        for (var j = 0; j < L; j++) discs.push(el('path', root))
+        for (j = 0; j < N; j++) {
+          var g = el('g', root), sp = el('path', g), bd = el('path', g)
+          sp.setAttribute('d', spinous(W[j])); sp.setAttribute('fill-opacity', '0.6'); bd.setAttribute('d', body(W[j]))
+          verts.push(g)
+        }
+
+        function draw(ts) {
+          var ps = pose(ts), pain = 1 - (ts[PAIN] + ts[PAIN + 1]) / 2
+          for (var j = 0; j < L; j++) {
+            var hurts = j === PAIN, d = disc(ps, j, hurts ? pain : 0)
+            discs[j].setAttribute('d', d.d)
+            discs[j].setAttribute('fill', color((ts[j] + ts[j + 1]) / 2, hurts))
+            discs[j].setAttribute('fill-opacity', hurts ? 0.45 + 0.55 * pain : 0.45)
+            if (hurts) painG.setAttribute('transform', 'translate(' + f(d.tip[0]) + ' ' + f(d.tip[1]) + ')')
+          }
+          for (j = 0; j < N; j++) {
+            verts[j].setAttribute('transform', 'translate(' + f(ps.p[j][0]) + ' ' + f(ps.p[j][1]) + ') rotate(' + f(ps.th[j]) + ')')
+            verts[j].setAttribute('fill', color(ts[j]))
+          }
+          painG.setAttribute('opacity', f(pain))
+        }
+        function at(ms) {
+          var ts = []
+          for (var j = 0; j < N; j++) ts.push(ease((ms - HOLD - (L - j) * STAGGER) / DUR))
+          return ts
+        }
+
+        var calm = document.querySelector('#splash .calm'), end = HOLD + DUR + STAGGER * L
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          draw(at(end)); calm.classList.add('on')
+          return
+        }
+        draw(at(0))
+        var start = performance.now()
+        function tick(now) {
+          var ms = now - start
+          draw(at(ms))
+          if (ms < end) requestAnimationFrame(tick)
+          else calm.classList.add('on')
+        }
+        requestAnimationFrame(tick)
+      })()
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -5,7 +5,7 @@ let hidden = false
  * `minMs` after navigation start (page load time counts), so it reads as a
  * deliberate beat rather than a flicker. Safe to call more than once.
  */
-export function hideSplash(minMs = 1200): void {
+export function hideSplash(minMs = 4400): void {
   if (hidden) return
   hidden = true
   const el = document.getElementById('splash')

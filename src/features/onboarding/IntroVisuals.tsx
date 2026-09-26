@@ -6,6 +6,7 @@ import { vasBand } from '@/lib/metrics'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/components/ui/cn'
 import { ProgressRing } from '@/components/ui/ProgressRing'
+import { SpineMark, useSpineCorrection } from '@/components/ui/SpineMark'
 import { LEVEL_TONE, vasColor } from '@/components/ui/tone'
 import { useI18n } from '@/i18n'
 import { CATEGORY_ICONS } from '@/features/ergonomics/categoryIcons'
@@ -44,16 +45,9 @@ const Card = ({ children, className }: { children: ReactNode; className?: string
 
 // ── Slide 1 ─────────────────────────────────────────────────────────────
 
-/** Vertebrae start out of line and settle into a straight stack. */
-const VERTEBRAE = [
-  { x: 24, y: 10, w: 16, h: 8, o: 0.55, shift: -7 },
-  { x: 23, y: 21, w: 18, h: 8, o: 0.7, shift: 6 },
-  { x: 22, y: 32, w: 20, h: 8, o: 0.85, shift: -4 },
-  { x: 21, y: 43, w: 22, h: 9, o: 1, shift: 3 },
-]
-
 export function WelcomeVisual({ active }: { active: boolean }) {
   const { m } = useI18n()
+  const spine = useSpineCorrection(active, 500)
   const chips = [
     { icon: Gauge, label: m.tabs.today, color: 'text-success', pos: 'top-2 start-0', delay: '0s' },
     { icon: Dumbbell, label: m.tabs.exercises, color: 'text-best', pos: 'top-10 end-0', delay: '-1s' },
@@ -66,26 +60,7 @@ export function WelcomeVisual({ active }: { active: boolean }) {
         <span className="absolute size-52 animate-pulse-soft rounded-full border border-brand/10" />
         <span className="absolute size-40 rounded-full border border-brand/15" />
         <span className="absolute size-28 rounded-full bg-brand/10 blur-xl" />
-        <svg viewBox="0 0 64 64" className="relative size-24 drop-shadow-[0_10px_30px_rgb(92_200_176/0.25)]">
-          <rect width="64" height="64" rx="16" fill="var(--color-panel-2)" />
-          {VERTEBRAE.map((v, i) => (
-            <rect
-              key={i}
-              x={v.x}
-              y={v.y}
-              width={v.w}
-              height={v.h}
-              rx={v.h / 2}
-              fill="var(--color-brand)"
-              opacity={v.o}
-              style={{
-                transform: active ? 'none' : `translateX(${v.shift}px)`,
-                transition: 'transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1)',
-                transitionDelay: active ? `${300 + i * 90}ms` : '0ms',
-              }}
-            />
-          ))}
-        </svg>
+        <SpineMark progress={spine} className="relative size-44 drop-shadow-[0_10px_30px_rgb(92_200_176/0.25)]" />
       </div>
       {chips.map(({ icon: Icon, label, color, pos, delay }) => (
         <div key={label} className={cn('absolute', pos)}>
