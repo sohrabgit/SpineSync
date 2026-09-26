@@ -518,7 +518,7 @@ export const fa: Messages = {
     finishRoutine: 'پایان',
   },
 
-  timer: { hold: 'مکث', relax: 'استراحت', ready: 'آماده', minutes: 'دقیقه', secondHold: 'ثانیه مکث', remaining: 'باقی‌مانده', seconds: 'ثانیه', paused: 'متوقف' },
+  timer: { hold: 'مکث', relax: 'استراحت', ready: 'آماده', minutes: 'دقیقه', secondHold: 'ثانیه مکث', remaining: 'باقی‌مانده', seconds: 'ثانیه', paused: 'متوقف', breatheIn: 'دم', breatheOut: 'بازدم' },
 
   ergoUi: {
     breaksTitle: 'استراحت‌های حرکتی',

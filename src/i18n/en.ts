@@ -529,7 +529,7 @@ export const en = {
     finishRoutine: 'Finish',
   },
 
-  timer: { hold: 'Hold', relax: 'Relax', ready: 'Ready', minutes: 'minutes', secondHold: 'second hold', remaining: 'remaining', seconds: 'seconds', paused: 'paused' },
+  timer: { hold: 'Hold', relax: 'Relax', ready: 'Ready', minutes: 'minutes', secondHold: 'second hold', remaining: 'remaining', seconds: 'seconds', paused: 'paused', breatheIn: 'Breathe in', breatheOut: 'Breathe out' },
 
   ergoUi: {
     breaksTitle: 'Movement breaks',

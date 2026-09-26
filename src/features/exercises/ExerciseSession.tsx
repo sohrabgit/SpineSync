@@ -11,7 +11,7 @@ import { Sheet } from '@/components/ui/Sheet'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { useI18n } from '@/i18n'
-import { HoldTimerRing } from './HoldTimerRing'
+import { BreathingOrb } from './BreathingOrb'
 import { useExerciseSheet } from './exerciseSheetStore'
 
 /** Session sheet for one exercise. Finishing or skipping moves on to the next unfinished one, so the plan plays as a guided routine. */
@@ -156,7 +156,7 @@ function SessionTimer({ exerciseId }: { exerciseId: ExerciseId }) {
   return (
     <div className="flex flex-col items-center rounded-3xl border border-line/60 bg-well px-4 pt-5 pb-4">
       <div className="relative">
-        <HoldTimerRing phase={timer.phase} remainingMs={timer.remainingMs} durationMs={timer.durationMs} running={timer.running} />
+        <BreathingOrb phase={timer.phase} remainingMs={timer.remainingMs} durationMs={timer.durationMs} running={timer.running} />
         <button
           type="button"
           onClick={() => setSound(!sound)}

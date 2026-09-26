@@ -539,7 +539,7 @@ export const fr: Messages = {
     finishRoutine: 'Terminer',
   },
 
-  timer: { hold: 'Maintien', relax: 'Relâchez', ready: 'Prêt', minutes: 'minutes', secondHold: 's de maintien', remaining: 'restantes', seconds: 'secondes', paused: 'en pause' },
+  timer: { hold: 'Maintien', relax: 'Relâchez', ready: 'Prêt', minutes: 'minutes', secondHold: 's de maintien', remaining: 'restantes', seconds: 'secondes', paused: 'en pause', breatheIn: 'Inspirez', breatheOut: 'Expirez' },
 
   ergoUi: {
     breaksTitle: 'Pauses actives',
